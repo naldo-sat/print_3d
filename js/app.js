@@ -1,0 +1,1505 @@
+// ========================================
+// VERSÃO ADAPTADA PARA LOCALSTORAGE
+// Para uso no GitHub Pages sem backend
+// ========================================
+
+// ========================================
+// LocalStorage Database Handler
+// ========================================
+const LocalDB = {
+    // Initialize database
+    init() {
+        if (!localStorage.getItem('print_calc_db')) {
+            localStorage.setItem('print_calc_db', JSON.stringify({
+                printers: [],
+                filaments: [],
+                calculations: [],
+                customization: null
+            }));
+        }
+    },
+
+    // Get all data
+    getDB() {
+        return JSON.parse(localStorage.getItem('print_calc_db') || '{}');
+    },
+
+    // Save all data
+    saveDB(db) {
+        localStorage.setItem('print_calc_db', JSON.stringify(db));
+    },
+
+    // Get table data
+    getTable(tableName) {
+        const db = this.getDB();
+        return db[tableName] || [];
+    },
+
+    // Save table data
+    saveTable(tableName, data) {
+        const db = this.getDB();
+        db[tableName] = data;
+        this.saveDB(db);
+    },
+
+    // Add item to table
+    addItem(tableName, item) {
+        const data = this.getTable(tableName);
+        item.id = this.generateId();
+        item.created_at = Date.now();
+        item.updated_at = Date.now();
+        data.push(item);
+        this.saveTable(tableName, data);
+        return item;
+    },
+
+    // Update item in table
+    updateItem(tableName, id, updates) {
+        const data = this.getTable(tableName);
+        const index = data.findIndex(item => item.id === id);
+        if (index !== -1) {
+            data[index] = { ...data[index], ...updates, updated_at: Date.now() };
+            this.saveTable(tableName, data);
+            return data[index];
+        }
+        return null;
+    },
+
+    // Delete item from table
+    deleteItem(tableName, id) {
+        const data = this.getTable(tableName);
+        const filtered = data.filter(item => item.id !== id);
+        this.saveTable(tableName, filtered);
+        return true;
+    },
+
+    // Get single item
+    getItem(tableName, id) {
+        const data = this.getTable(tableName);
+        return data.find(item => item.id === id);
+    },
+
+    // Generate unique ID
+    generateId() {
+        return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    },
+
+    // Clear all data
+    clearAll() {
+        localStorage.setItem('print_calc_db', JSON.stringify({
+            printers: [],
+            filaments: [],
+            calculations: [],
+            customization: null
+        }));
+    }
+};
+
+// Initialize database on load
+LocalDB.init();
+
+// ========================================
+// Global State & Configuration
+// ========================================
+const APP_STATE = {
+    currentPage: 'calculator',
+    darkMode: false,
+    filaments: [],
+    printers: [],
+    calculations: [],
+    customization: null,
+    currentCalculation: null,
+    sidebarCollapsed: false
+};
+
+// ========================================
+// Initialization
+// ========================================
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeApp();
+});
+
+async function initializeApp() {
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        APP_STATE.darkMode = true;
+    }
+
+    // Load saved sidebar state
+    const sidebarState = localStorage.getItem('sidebarCollapsed');
+    if (sidebarState === 'true') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        APP_STATE.sidebarCollapsed = true;
+    }
+
+    // Setup event listeners
+    setupNavigation();
+    setupThemeToggle();
+    setupMenuToggle();
+    setupSidebarCollapse();
+    setupConfigTabs();
+    setupCalculatorForm();
+    setupFilamentForm();
+    setupPrinterForm();
+    setupCustomizationForm();
+    setupHistoryHandlers();
+
+    // Load initial data
+    await loadCustomization();
+    await loadPrinters();
+    await loadFilaments();
+    await loadCalculations();
+    
+    renderDashboard();
+}
+
+// ========================================
+// Navigation
+// ========================================
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = link.getAttribute('data-page');
+            showPage(page);
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        });
+    });
+}
+
+function showPage(pageId) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show selected page
+    const selectedPage = document.getElementById(`${pageId}Page`);
+    if (selectedPage) {
+        selectedPage.classList.add('active');
+        APP_STATE.currentPage = pageId;
+    }
+    
+    // Update active nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-page') === pageId) {
+            link.classList.add('active');
+        }
+    });
+    
+    // Refresh data if needed
+    if (pageId === 'dashboard') {
+        renderDashboard();
+    }
+}
+
+// ========================================
+// Theme Toggle
+// ========================================
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            APP_STATE.darkMode = !APP_STATE.darkMode;
+            localStorage.setItem('theme', APP_STATE.darkMode ? 'dark' : 'light');
+        });
+    }
+}
+
+// ========================================
+// Menu Toggle (Mobile)
+// ========================================
+function setupMenuToggle() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target) &&
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+    }
+}
+
+// ========================================
+// Sidebar Collapse
+// ========================================
+function setupSidebarCollapse() {
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (collapseBtn && sidebar) {
+        collapseBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            APP_STATE.sidebarCollapsed = !APP_STATE.sidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', APP_STATE.sidebarCollapsed);
+        });
+    }
+}
+
+// ========================================
+// Config Tabs
+// ========================================
+function setupConfigTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.getAttribute('data-tab');
+            
+            // Update active button
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        });
+    });
+}
+
+// ========================================
+// Customization Functions
+// ========================================
+async function loadCustomization() {
+    try {
+        const db = LocalDB.getDB();
+        APP_STATE.customization = db.customization;
+        applyCustomization();
+    } catch (error) {
+        console.error('Error loading customization:', error);
+    }
+}
+
+function applyCustomization() {
+    if (!APP_STATE.customization) return;
+    
+    const { app_name, primary_color, secondary_color, background_color, logo_url } = APP_STATE.customization;
+    
+    // Update app name
+    if (app_name) {
+        document.querySelectorAll('.app-name').forEach(el => {
+            el.textContent = app_name;
+        });
+        document.title = app_name;
+    }
+    
+    // Update colors
+    if (primary_color) {
+        document.documentElement.style.setProperty('--primary-color', primary_color);
+    }
+    if (secondary_color) {
+        document.documentElement.style.setProperty('--secondary-color', secondary_color);
+    }
+    if (background_color) {
+        document.documentElement.style.setProperty('--bg-primary', background_color);
+    }
+    
+    // Update logo
+    const logoElements = document.querySelectorAll('#appLogo, #printLogo');
+    if (logo_url) {
+        logoElements.forEach(logo => {
+            logo.src = logo_url;
+            logo.style.display = 'block';
+        });
+    }
+}
+
+function setupCustomizationForm() {
+    const form = document.getElementById('customizationForm');
+    if (!form) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveCustomization();
+    });
+    
+    // Logo upload
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', handleLogoUpload);
+    }
+    
+    // Color pickers sync
+    setupColorSync('primaryColor');
+    setupColorSync('secondaryColor');
+    setupColorSync('backgroundColor');
+    
+    // Load current values
+    loadCustomizationForm();
+}
+
+function setupColorSync(colorName) {
+    const picker = document.getElementById(`${colorName}Picker`);
+    const input = document.getElementById(`${colorName}Input`);
+    
+    if (picker && input) {
+        picker.addEventListener('input', () => {
+            input.value = picker.value;
+        });
+        input.addEventListener('input', () => {
+            if (/^#[0-9A-F]{6}$/i.test(input.value)) {
+                picker.value = input.value;
+            }
+        });
+    }
+}
+
+function loadCustomizationForm() {
+    if (!APP_STATE.customization) return;
+    
+    const { app_name, primary_color, secondary_color, background_color } = APP_STATE.customization;
+    
+    document.getElementById('appNameInput').value = app_name || '';
+    
+    if (primary_color) {
+        document.getElementById('primaryColorInput').value = primary_color;
+        document.getElementById('primaryColorPicker').value = primary_color;
+    }
+    if (secondary_color) {
+        document.getElementById('secondaryColorInput').value = secondary_color;
+        document.getElementById('secondaryColorPicker').value = secondary_color;
+    }
+    if (background_color) {
+        document.getElementById('backgroundColorInput').value = background_color;
+        document.getElementById('backgroundColorPicker').value = background_color;
+    }
+}
+
+async function handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        showNotification('Arquivo muito grande. Máximo: 2MB', 'error');
+        return;
+    }
+    
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const logoUrl = event.target.result;
+        
+        // Update customization
+        if (APP_STATE.customization) {
+            APP_STATE.customization.logo_url = logoUrl;
+        } else {
+            APP_STATE.customization = { logo_url: logoUrl };
+        }
+        
+        // Save to database
+        const db = LocalDB.getDB();
+        db.customization = APP_STATE.customization;
+        LocalDB.saveDB(db);
+        
+        applyCustomization();
+        showNotification('Logo atualizado com sucesso!', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+async function saveCustomization() {
+    const appName = document.getElementById('appNameInput').value;
+    const primaryColor = document.getElementById('primaryColorInput').value;
+    const secondaryColor = document.getElementById('secondaryColorInput').value;
+    const backgroundColor = document.getElementById('backgroundColorInput').value;
+    
+    const customizationData = {
+        app_name: appName,
+        primary_color: primaryColor,
+        secondary_color: secondaryColor,
+        background_color: backgroundColor,
+        logo_url: APP_STATE.customization?.logo_url || ''
+    };
+    
+    try {
+        // Save to database
+        const db = LocalDB.getDB();
+        db.customization = customizationData;
+        LocalDB.saveDB(db);
+        
+        APP_STATE.customization = customizationData;
+        applyCustomization();
+        
+        showNotification('Personalização salva com sucesso!', 'success');
+    } catch (error) {
+        console.error('Error saving customization:', error);
+        showNotification('Erro ao salvar personalização', 'error');
+    }
+}
+
+// ========================================
+// Printers Functions
+// ========================================
+async function loadPrinters() {
+    try {
+        APP_STATE.printers = LocalDB.getTable('printers');
+        renderPrintersList();
+        updatePrinterSelect();
+    } catch (error) {
+        console.error('Error loading printers:', error);
+        showNotification('Erro ao carregar impressoras', 'error');
+    }
+}
+
+function renderPrintersList() {
+    const grid = document.getElementById('printersGrid');
+    if (!grid) return;
+    
+    if (APP_STATE.printers.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-print fa-3x"></i>
+                <p>Nenhuma impressora cadastrada ainda.</p>
+                <p>Clique em "Adicionar Impressora" para começar.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Render as compact list on mobile
+        grid.innerHTML = APP_STATE.printers.map(printer => `
+            <div class="printer-card">
+                <div class="printer-card-content">
+                    <div class="printer-card-title">${printer.name}</div>
+                    <div class="printer-card-info">
+                        <span>${printer.model}</span>
+                        <span>${printer.power_watts}W • R$ ${printer.energy_cost_kwh.toFixed(2)}/kWh</span>
+                    </div>
+                </div>
+                <div class="printer-card-actions">
+                    <button class="btn-icon-small" onclick="editPrinter('${printer.id}')" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon-small" onclick="deletePrinter('${printer.id}')" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        // Render as cards on desktop
+        grid.innerHTML = APP_STATE.printers.map(printer => `
+            <div class="printer-card">
+                <div class="printer-header">
+                    <div class="printer-title">
+                        <h3>${printer.name}</h3>
+                        <p class="printer-model">${printer.model}</p>
+                    </div>
+                    <div class="printer-actions">
+                        <button onclick="editPrinter('${printer.id}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deletePrinter('${printer.id}')" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="printer-info">
+                    <div class="printer-info-item">
+                        <span>Consumo</span>
+                        <span>${printer.power_watts} W</span>
+                    </div>
+                    <div class="printer-info-item">
+                        <span>Custo kWh</span>
+                        <span>R$ ${printer.energy_cost_kwh.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function updatePrinterSelect() {
+    const select = document.getElementById('printerSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Selecione a impressora</option>' +
+        APP_STATE.printers.map(p => 
+            `<option value="${p.id}">${p.name} - ${p.model}</option>`
+        ).join('');
+}
+
+function setupPrinterForm() {
+    const addBtn = document.getElementById('addPrinterBtn');
+    const modal = document.getElementById('printerModal');
+    const closeBtn = modal?.querySelector('.modal-close');
+    const form = document.getElementById('printerForm');
+    
+    if (addBtn && modal) {
+        addBtn.addEventListener('click', () => {
+            form.reset();
+            delete form.dataset.editId;
+            document.getElementById('printerModalTitle').textContent = 'Adicionar Impressora';
+            modal.classList.add('active');
+        });
+    }
+    
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+    
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await savePrinter();
+        });
+    }
+}
+
+async function savePrinter() {
+    const form = document.getElementById('printerForm');
+    const editId = form.dataset.editId;
+    
+    const printerData = {
+        name: document.getElementById('printerName').value,
+        model: document.getElementById('printerModel').value,
+        power_watts: parseFloat(document.getElementById('printerPower').value),
+        energy_cost_kwh: parseFloat(document.getElementById('printerEnergyCost').value)
+    };
+    
+    try {
+        if (editId) {
+            // Update existing
+            LocalDB.updateItem('printers', editId, printerData);
+            showNotification('Impressora atualizada com sucesso!', 'success');
+        } else {
+            // Create new
+            LocalDB.addItem('printers', printerData);
+            showNotification('Impressora adicionada com sucesso!', 'success');
+        }
+        
+        await loadPrinters();
+        document.getElementById('printerModal').classList.remove('active');
+    } catch (error) {
+        console.error('Error saving printer:', error);
+        showNotification('Erro ao salvar impressora', 'error');
+    }
+}
+
+function editPrinter(id) {
+    const printer = LocalDB.getItem('printers', id);
+    if (!printer) return;
+    
+    const form = document.getElementById('printerForm');
+    form.dataset.editId = id;
+    
+    document.getElementById('printerName').value = printer.name;
+    document.getElementById('printerModel').value = printer.model;
+    document.getElementById('printerPower').value = printer.power_watts;
+    document.getElementById('printerEnergyCost').value = printer.energy_cost_kwh;
+    
+    document.getElementById('printerModalTitle').textContent = 'Editar Impressora';
+    document.getElementById('printerModal').classList.add('active');
+}
+
+async function deletePrinter(id) {
+    if (!confirm('Tem certeza que deseja excluir esta impressora?')) {
+        return;
+    }
+    
+    try {
+        LocalDB.deleteItem('printers', id);
+        showNotification('Impressora excluída com sucesso!', 'success');
+        await loadPrinters();
+    } catch (error) {
+        console.error('Error deleting printer:', error);
+        showNotification('Erro ao excluir impressora', 'error');
+    }
+}
+
+// ========================================
+// Filaments Functions
+// ========================================
+async function loadFilaments() {
+    try {
+        APP_STATE.filaments = LocalDB.getTable('filaments');
+        renderFilamentsList();
+        updateFilamentSelect();
+    } catch (error) {
+        console.error('Error loading filaments:', error);
+        showNotification('Erro ao carregar filamentos', 'error');
+    }
+}
+
+function renderFilamentsList() {
+    const grid = document.getElementById('filamentsGrid');
+    if (!grid) return;
+    
+    if (APP_STATE.filaments.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-boxes fa-3x"></i>
+                <p>Nenhum filamento cadastrado ainda.</p>
+                <p>Clique em "Adicionar Filamento" para começar.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Render as compact list on mobile
+        grid.innerHTML = APP_STATE.filaments.map(filament => {
+            const colorStyle = filament.color_hex ? 
+                `<span class="color-swatch" style="background-color: ${filament.color_hex}; width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle;"></span>` : '';
+            
+            return `
+                <div class="filament-card">
+                    <div class="filament-card-content">
+                        <div class="filament-card-title">
+                            ${colorStyle}${filament.name}
+                        </div>
+                        <div class="filament-card-info">
+                            <span>${filament.type}</span>
+                            <span>R$ ${filament.price_total.toFixed(2)} • ${filament.quantity_grams}g</span>
+                        </div>
+                    </div>
+                    <div class="filament-card-actions">
+                        <button class="btn-icon-small" onclick="editFilament('${filament.id}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon-small" onclick="deleteFilament('${filament.id}')" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        // Render as cards on desktop
+        grid.innerHTML = APP_STATE.filaments.map(filament => {
+            const colorStyle = filament.color_hex ? 
+                `style="background-color: ${filament.color_hex}; color: ${getContrastColor(filament.color_hex)};"` : '';
+            const colorSwatch = filament.color_hex ?
+                `<span class="color-swatch" style="background-color: ${filament.color_hex}; width: 24px; height: 24px; display: inline-block; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; border: 2px solid #ddd;"></span>` : '';
+            
+            return `
+                <div class="filament-card" ${colorStyle}>
+                    <div class="filament-header">
+                        <h3>${filament.name}${colorSwatch}</h3>
+                        <div class="filament-actions">
+                            <button onclick="editFilament('${filament.id}')" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteFilament('${filament.id}')" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filament-details">
+                        <p><strong>Tipo:</strong> ${filament.type}</p>
+                        <p><strong>Preço Total:</strong> R$ ${filament.price_total.toFixed(2)}</p>
+                        <p><strong>Quantidade:</strong> ${filament.quantity_grams} g</p>
+                        <p><strong>Preço/g:</strong> R$ ${filament.price_per_gram.toFixed(4)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function getContrastColor(hexColor) {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.substr(1, 2), 16);
+    const g = parseInt(hexColor.substr(3, 2), 16);
+    const b = parseInt(hexColor.substr(5, 2), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return black or white based on luminance
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+}
+
+function updateFilamentSelect() {
+    const select = document.getElementById('filamentSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Selecione o filamento</option>' +
+        APP_STATE.filaments.map(f => {
+            const colorIndicator = f.color_hex ? 
+                `<span style="display:inline-block; width:12px; height:12px; background:${f.color_hex}; border-radius:50%; margin-right:5px; vertical-align:middle;"></span>` : '';
+            return `<option value="${f.id}">${f.name} (R$ ${f.price_per_gram.toFixed(4)}/g)</option>`;
+        }).join('');
+}
+
+function setupFilamentForm() {
+    const addBtn = document.getElementById('addFilamentBtn');
+    const modal = document.getElementById('filamentModal');
+    const closeBtn = modal?.querySelector('.modal-close');
+    const form = document.getElementById('filamentForm');
+    
+    if (addBtn && modal) {
+        addBtn.addEventListener('click', () => {
+            form.reset();
+            delete form.dataset.editId;
+            document.getElementById('filamentModalTitle').textContent = 'Adicionar Filamento';
+            modal.classList.add('active');
+        });
+    }
+    
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+    
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveFilament();
+        });
+        
+        // Auto-calculate price per gram
+        const quantityInput = document.getElementById('filamentQuantity');
+        const priceInput = document.getElementById('filamentPrice');
+        
+        if (quantityInput && priceInput) {
+            const updatePricePerGram = () => {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const pricePerGram = quantity > 0 ? (price / quantity).toFixed(4) : '0.0000';
+                const display = document.getElementById('pricePerGramDisplay');
+                if (display) {
+                    display.textContent = `R$ ${pricePerGram}/g`;
+                }
+            };
+            
+            quantityInput.addEventListener('input', updatePricePerGram);
+            priceInput.addEventListener('input', updatePricePerGram);
+        }
+    }
+}
+
+async function saveFilament() {
+    const form = document.getElementById('filamentForm');
+    const editId = form.dataset.editId;
+    
+    const quantity = parseFloat(document.getElementById('filamentQuantity').value);
+    const price = parseFloat(document.getElementById('filamentPrice').value);
+    
+    const filamentData = {
+        name: document.getElementById('filamentName').value,
+        type: document.getElementById('filamentType').value,
+        color: document.getElementById('filamentColor').value,
+        color_hex: document.getElementById('filamentColorHex').value,
+        quantity_grams: quantity,
+        price_total: price,
+        price_per_gram: quantity > 0 ? price / quantity : 0
+    };
+    
+    try {
+        if (editId) {
+            // Update existing
+            LocalDB.updateItem('filaments', editId, filamentData);
+            showNotification('Filamento atualizado com sucesso!', 'success');
+        } else {
+            // Create new
+            LocalDB.addItem('filaments', filamentData);
+            showNotification('Filamento adicionado com sucesso!', 'success');
+        }
+        
+        await loadFilaments();
+        document.getElementById('filamentModal').classList.remove('active');
+    } catch (error) {
+        console.error('Error saving filament:', error);
+        showNotification('Erro ao salvar filamento', 'error');
+    }
+}
+
+function editFilament(id) {
+    const filament = LocalDB.getItem('filaments', id);
+    if (!filament) return;
+    
+    const form = document.getElementById('filamentForm');
+    form.dataset.editId = id;
+    
+    document.getElementById('filamentName').value = filament.name;
+    document.getElementById('filamentType').value = filament.type;
+    document.getElementById('filamentColor').value = filament.color || '';
+    document.getElementById('filamentColorHex').value = filament.color_hex || '#667eea';
+    document.getElementById('filamentQuantity').value = filament.quantity_grams;
+    document.getElementById('filamentPrice').value = filament.price_total;
+    
+    // Trigger price calculation
+    document.getElementById('filamentQuantity').dispatchEvent(new Event('input'));
+    
+    document.getElementById('filamentModalTitle').textContent = 'Editar Filamento';
+    document.getElementById('filamentModal').classList.add('active');
+}
+
+async function deleteFilament(id) {
+    if (!confirm('Tem certeza que deseja excluir este filamento?')) {
+        return;
+    }
+    
+    try {
+        LocalDB.deleteItem('filaments', id);
+        showNotification('Filamento excluído com sucesso!', 'success');
+        await loadFilaments();
+    } catch (error) {
+        console.error('Error deleting filament:', error);
+        showNotification('Erro ao excluir filamento', 'error');
+    }
+}
+
+// ========================================
+// Calculator Functions
+// ========================================
+function setupCalculatorForm() {
+    const form = document.getElementById('calculatorForm');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const saveBtn = document.getElementById('saveCalculation');
+    const printBtn = document.getElementById('printBudget');
+    
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            calculatePrintCost();
+        });
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            form.reset();
+            document.getElementById('resultCard').style.display = 'none';
+            APP_STATE.currentCalculation = null;
+        });
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveCalculation);
+    }
+    
+    if (printBtn) {
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+    }
+}
+
+function calculatePrintCost() {
+    // Get form values
+    const modelName = document.getElementById('modelName').value.trim();
+    const printerId = document.getElementById('printerSelect').value;
+    const filamentId = document.getElementById('filamentSelect').value;
+    const weight = parseFloat(document.getElementById('weight').value) || 0;
+    const hours = parseInt(document.getElementById('printTimeHours').value) || 0;
+    const minutes = parseInt(document.getElementById('printTimeMinutes').value) || 0;
+    const failureRate = parseFloat(document.getElementById('failureRate').value) || 0;
+    const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
+    
+    // Validate required fields
+    if (!printerId) {
+        showNotification('Selecione uma impressora', 'error');
+        return;
+    }
+    
+    if (!filamentId) {
+        showNotification('Selecione um filamento', 'error');
+        return;
+    }
+    
+    // Get printer and filament data
+    const printer = LocalDB.getItem('printers', printerId);
+    const filament = LocalDB.getItem('filaments', filamentId);
+    
+    if (!printer) {
+        showNotification('Impressora não encontrada', 'error');
+        return;
+    }
+    
+    if (!filament) {
+        showNotification('Filamento não encontrado', 'error');
+        return;
+    }
+    
+    // Convert time to hours
+    const timeInHours = hours + (minutes / 60);
+    
+    // Calculate costs
+    const baseCost = weight * filament.price_per_gram;
+    const failureCost = baseCost * (failureRate / 100);
+    const energyCost = (printer.power_watts / 1000) * timeInHours * printer.energy_cost_kwh;
+    const totalCost = baseCost + failureCost + energyCost;
+    const profitValue = baseCost * (profitMargin / 100);
+    const finalPrice = totalCost + profitValue;
+    
+    // Format time for display
+    const timeFormatted = `${hours}h ${minutes.toString().padStart(2, '0')}min`;
+    
+    // Store calculation
+    APP_STATE.currentCalculation = {
+        model_name: modelName,
+        printer_id: printerId,
+        printer_name: printer.name,
+        filament_id: filamentId,
+        filament_name: filament.name,
+        weight_grams: weight,
+        weight_with_failure: weight + (weight * failureRate / 100),
+        failure_rate: failureRate,
+        print_time_hours: timeInHours,
+        print_time_formatted: timeFormatted,
+        material_cost: baseCost,
+        energy_cost: energyCost,
+        total_cost: totalCost,
+        profit_margin_percent: profitMargin,
+        profit_value: profitValue,
+        final_price: finalPrice,
+        calculation_date: new Date().toISOString()
+    };
+    
+    // Display results
+    displayCalculationResults();
+}
+
+function displayCalculationResults() {
+    const calc = APP_STATE.currentCalculation;
+    
+    // Show result card
+    const resultCard = document.getElementById('resultCard');
+    resultCard.style.display = 'block';
+    
+    // Fill in the values
+    document.getElementById('resultModelName').textContent = calc.model_name || 'N/A';
+    document.getElementById('resultPrinter').textContent = calc.printer_name;
+    document.getElementById('resultFilament').textContent = calc.filament_name;
+    document.getElementById('resultWeight').textContent = `${calc.weight_grams.toFixed(2)}g`;
+    document.getElementById('resultTime').textContent = calc.print_time_formatted;
+    document.getElementById('resultMaterialCost').textContent = `R$ ${calc.material_cost.toFixed(2)}`;
+    document.getElementById('resultEnergyCost').textContent = `R$ ${calc.energy_cost.toFixed(2)}`;
+    document.getElementById('resultTotalCost').textContent = `R$ ${calc.total_cost.toFixed(2)}`;
+    document.getElementById('resultProfitMargin').textContent = `${calc.profit_margin_percent.toFixed(0)}%`;
+    document.getElementById('resultProfitValue').textContent = `R$ ${calc.profit_value.toFixed(2)}`;
+    document.getElementById('resultFinalPrice').textContent = `R$ ${calc.final_price.toFixed(2)}`;
+    
+    // Update print date
+    const printDate = document.getElementById('printDate');
+    if (printDate) {
+        const date = new Date();
+        printDate.textContent = date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    // Scroll to result
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function saveCalculation() {
+    if (!APP_STATE.currentCalculation) {
+        showNotification('Nenhum cálculo para salvar', 'error');
+        return;
+    }
+    
+    try {
+        LocalDB.addItem('calculations', APP_STATE.currentCalculation);
+        showNotification('Cálculo salvo no histórico!', 'success');
+        await loadCalculations();
+        renderDashboard();
+    } catch (error) {
+        console.error('Error saving calculation:', error);
+        showNotification('Erro ao salvar cálculo', 'error');
+    }
+}
+
+// ========================================
+// Calculations/History Functions
+// ========================================
+async function loadCalculations() {
+    try {
+        APP_STATE.calculations = LocalDB.getTable('calculations');
+        renderHistoryTable();
+    } catch (error) {
+        console.error('Error loading calculations:', error);
+        showNotification('Erro ao carregar histórico', 'error');
+    }
+}
+
+function setupHistoryHandlers() {
+    const searchInput = document.getElementById('historySearch');
+    const filterSelect = document.getElementById('filterPeriod');
+    const clearBtn = document.getElementById('clearHistory');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', renderHistoryTable);
+    }
+    
+    if (filterSelect) {
+        filterSelect.addEventListener('change', (e) => {
+            const customDateRange = document.getElementById('customDateRange');
+            if (e.target.value === 'custom') {
+                customDateRange.style.display = 'flex';
+            } else {
+                customDateRange.style.display = 'none';
+            }
+            renderHistoryTable();
+        });
+    }
+    
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    if (startDate && endDate) {
+        startDate.addEventListener('change', renderHistoryTable);
+        endDate.addEventListener('change', renderHistoryTable);
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllHistory);
+    }
+}
+
+function renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+    
+    let filteredCalcs = [...APP_STATE.calculations];
+    
+    // Apply search filter
+    const searchTerm = document.getElementById('historySearch')?.value.toLowerCase() || '';
+    if (searchTerm) {
+        filteredCalcs = filteredCalcs.filter(calc => 
+            calc.model_name.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Apply period filter
+    const period = document.getElementById('filterPeriod')?.value || 'all';
+    if (period !== 'all') {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        filteredCalcs = filteredCalcs.filter(calc => {
+            const calcDate = new Date(calc.calculation_date);
+            
+            switch (period) {
+                case 'today':
+                    return calcDate >= startOfToday;
+                case 'week':
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    return calcDate >= weekAgo;
+                case 'month':
+                    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                    return calcDate >= monthAgo;
+                case 'year':
+                    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                    return calcDate >= yearAgo;
+                case 'custom':
+                    const startDate = document.getElementById('startDate')?.value;
+                    const endDate = document.getElementById('endDate')?.value;
+                    if (startDate && endDate) {
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        end.setHours(23, 59, 59, 999);
+                        return calcDate >= start && calcDate <= end;
+                    }
+                    return true;
+                default:
+                    return true;
+            }
+        });
+    }
+    
+    // Sort by date (newest first)
+    filteredCalcs.sort((a, b) => new Date(b.calculation_date) - new Date(a.calculation_date));
+    
+    if (filteredCalcs.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-inbox fa-2x" style="color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+                    <p>Nenhum cálculo encontrado</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = filteredCalcs.map(calc => {
+        const date = new Date(calc.calculation_date);
+        const dateStr = date.toLocaleDateString('pt-BR');
+        const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+            <tr>
+                <td>${dateStr} ${timeStr}</td>
+                <td>${calc.model_name}</td>
+                <td>${calc.printer_name}</td>
+                <td>${calc.weight_grams.toFixed(2)}g</td>
+                <td>R$ ${calc.final_price.toFixed(2)}</td>
+                <td>
+                    <button class="btn-icon" onclick="showCalculationDetails('${calc.id}')" title="Ver detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon" onclick="deleteCalculation('${calc.id}')" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function showCalculationDetails(id) {
+    const calc = LocalDB.getItem('calculations', id);
+    if (!calc) return;
+    
+    // Store as current calculation
+    APP_STATE.currentCalculation = calc;
+    
+    // Navigate to calculator page
+    showPage('calculator');
+    
+    // Display results
+    displayCalculationResults();
+    
+    // Fill form with calculation data
+    document.getElementById('modelName').value = calc.model_name;
+    document.getElementById('printerSelect').value = calc.printer_id;
+    document.getElementById('filamentSelect').value = calc.filament_id;
+    document.getElementById('weight').value = calc.weight_grams;
+    
+    // Parse time
+    const hours = Math.floor(calc.print_time_hours);
+    const minutes = Math.round((calc.print_time_hours - hours) * 60);
+    document.getElementById('printTimeHours').value = hours;
+    document.getElementById('printTimeMinutes').value = minutes;
+    
+    document.getElementById('failureRate').value = calc.failure_rate || 5;
+    document.getElementById('profitMargin').value = calc.profit_margin_percent;
+}
+
+async function deleteCalculation(id) {
+    if (!confirm('Tem certeza que deseja excluir este cálculo?')) {
+        return;
+    }
+    
+    try {
+        LocalDB.deleteItem('calculations', id);
+        showNotification('Cálculo excluído com sucesso!', 'success');
+        await loadCalculations();
+        renderDashboard();
+    } catch (error) {
+        console.error('Error deleting calculation:', error);
+        showNotification('Erro ao excluir cálculo', 'error');
+    }
+}
+
+async function clearAllHistory() {
+    if (!confirm('Tem certeza que deseja limpar todo o histórico? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    try {
+        LocalDB.saveTable('calculations', []);
+        APP_STATE.calculations = [];
+        showNotification('Histórico limpo com sucesso!', 'success');
+        renderHistoryTable();
+        renderDashboard();
+    } catch (error) {
+        console.error('Error clearing history:', error);
+        showNotification('Erro ao limpar histórico', 'error');
+    }
+}
+
+// ========================================
+// Dashboard Functions
+// ========================================
+function renderDashboard() {
+    const stats = calculateStatistics();
+    
+    // Update stats
+    document.getElementById('statTotalCalculations').textContent = stats.totalCalculations;
+    document.getElementById('statTotalValue').textContent = stats.totalValue.toFixed(2);
+    document.getElementById('statTotalProfit').textContent = stats.totalProfit.toFixed(2);
+    document.getElementById('statTotalWeight').textContent = Math.round(stats.totalWeight);
+    
+    // Render charts
+    renderFilamentsChart(stats.filamentUsage, stats.filamentColors);
+    renderCostsChart(stats.costsOverTime);
+}
+
+function calculateStatistics() {
+    const calculations = APP_STATE.calculations;
+    
+    const stats = {
+        totalCalculations: calculations.length,
+        totalValue: calculations.reduce((sum, c) => sum + (c.final_price || 0), 0),
+        totalProfit: calculations.reduce((sum, c) => sum + (c.profit_value || 0), 0),
+        totalFilaments: new Set(calculations.map(c => c.filament_name)).size,
+        totalWeight: calculations.reduce((sum, c) => sum + (c.weight_grams || 0), 0),
+        filamentUsage: {},
+        filamentColors: {},
+        costsOverTime: []
+    };
+    
+    // Calculate filament usage
+    calculations.forEach(calc => {
+        const name = calc.filament_name;
+        if (!stats.filamentUsage[name]) {
+            stats.filamentUsage[name] = 0;
+            
+            // Get filament color
+            const filament = APP_STATE.filaments.find(f => f.name === name);
+            if (filament && filament.color_hex) {
+                stats.filamentColors[name] = filament.color_hex;
+            }
+        }
+        stats.filamentUsage[name] += calc.weight_grams || 0;
+    });
+    
+    // Get last 10 calculations for costs chart
+    stats.costsOverTime = calculations
+        .slice(-10)
+        .reverse()
+        .map(calc => ({
+            name: calc.model_name,
+            cost: calc.total_cost || 0,
+            price: calc.final_price || 0
+        }));
+    
+    return stats;
+}
+
+let filamentsChartInstance = null;
+
+function renderFilamentsChart(filamentUsage, filamentColors) {
+    const canvas = document.getElementById('filamentsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy existing chart
+    if (filamentsChartInstance) {
+        filamentsChartInstance.destroy();
+    }
+    
+    const labels = Object.keys(filamentUsage);
+    const data = Object.values(filamentUsage);
+    
+    if (labels.length === 0) {
+        canvas.parentElement.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-chart-pie fa-2x"></i>
+                <p>Nenhum dado disponível</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Default colors for when filament has no color defined
+    const defaultColors = [
+        '#667eea', '#764ba2', '#f093fb', 
+        '#4facfe', '#28a745', '#fa709a',
+        '#ff6b6b', '#4ecdc4', '#45b7d1'
+    ];
+    
+    // Map colors: use filament color if available, otherwise use default
+    const backgroundColors = labels.map((label, index) => {
+        return filamentColors[label] || defaultColors[index % defaultColors.length];
+    });
+    
+    filamentsChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColors
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            return `${label}: ${value.toFixed(0)}g`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+let costsChartInstance = null;
+
+function renderCostsChart(costsOverTime) {
+    const canvas = document.getElementById('costsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy existing chart
+    if (costsChartInstance) {
+        costsChartInstance.destroy();
+    }
+    
+    if (costsOverTime.length === 0) {
+        canvas.parentElement.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-chart-bar fa-2x"></i>
+                <p>Nenhum dado disponível</p>
+            </div>
+        `;
+        return;
+    }
+    
+    costsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: costsOverTime.map(item => item.name),
+            datasets: [
+                {
+                    label: 'Custo Total',
+                    data: costsOverTime.map(item => item.cost),
+                    backgroundColor: '#ff9500'
+                },
+                {
+                    label: 'Preço Final',
+                    data: costsOverTime.map(item => item.price),
+                    backgroundColor: '#28a745'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: R$ ${context.parsed.y.toFixed(2)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ========================================
+// Notifications
+// ========================================
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    
+    // Set color based on type
+    const colors = {
+        success: '#48bb78',
+        error: '#f56565',
+        info: '#4299e1'
+    };
+    notification.style.backgroundColor = colors[type] || colors.info;
+    notification.style.color = 'white';
+    notification.style.padding = '1rem 1.5rem';
+    notification.style.borderRadius = '8px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    notification.style.position = 'fixed';
+    notification.style.top = '2rem';
+    notification.style.right = '2rem';
+    notification.style.zIndex = '10000';
+    notification.style.maxWidth = '300px';
+    notification.style.animation = 'slideIn 0.3s ease';
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Add CSS animation for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Make functions global
+window.editPrinter = editPrinter;
+window.deletePrinter = deletePrinter;
+window.editFilament = editFilament;
+window.deleteFilament = deleteFilament;
+window.showCalculationDetails = showCalculationDetails;
+window.deleteCalculation = deleteCalculation;
