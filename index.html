@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Impressão 3D</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header" id="sidebarHeader">
+            <div class="sidebar-logo-container">
+                <img id="appLogo" src="" alt="" style="display: none;">
+                <i class="fas fa-cube" id="appIcon"></i>
+            </div>
+            <h2 id="appName">Print Calc</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-link active" data-page="calculator">
+                <i class="fas fa-calculator"></i>
+                <span>Calculadora</span>
+            </a>
+            <a href="#" class="nav-link" data-page="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" data-page="config">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Sidebar Collapse Button (Outside) -->
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher/Expandir menu">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Calculator Page -->
+        <section class="page active" id="calculatorPage">
+            <div class="page-header">
+                <h1><i class="fas fa-calculator"></i> Calculadora de Impressão</h1>
+                <p>Calcule o custo total da sua impressão 3D</p>
+            </div>
+
+            <div class="calculator-container">
+                <div class="calculator-form-card">
+                    <form id="calculatorForm">
+                        <!-- Nome do Modelo -->
+                        <div class="form-group">
+                            <label for="modelName">
+                                <i class="fas fa-tag"></i> Nome do Modelo
+                            </label>
+                            <input type="text" id="modelName" required placeholder="Ex: Vaso Decorativo">
+                        </div>
+
+                        <!-- Row 1: Peso + Tempo -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="weight">
+                                    <i class="fas fa-weight"></i> Peso (gramas)
+                                </label>
+                                <input type="number" id="weight" required placeholder="Ex: 25" step="0.01" min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="printTime">
+                                    <i class="fas fa-clock"></i> Tempo de Impressão
+                                </label>
+                                <div class="time-selector-group">
+                                    <input type="number" id="printTimeHours" class="time-input-number" min="0" max="99" step="1" value="0" placeholder="0">
+                                    <span class="time-label">h</span>
+                                    <input type="number" id="printTimeMinutes" class="time-input-number" min="0" max="59" step="1" value="0" placeholder="0">
+                                    <span class="time-label">min</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Impressora + Filamento -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="printerSelect">
+                                    <i class="fas fa-print"></i> Impressora
+                                </label>
+                                <select id="printerSelect" required>
+                                    <option value="">Selecione a impressora</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="filamentSelect">
+                                    <i class="fas fa-fill-drip"></i> Filamento
+                                </label>
+                                <select id="filamentSelect" required>
+                                    <option value="">Selecione o filamento</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Margem de Lucro + Taxa de Falha -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profitMargin">
+                                    <i class="fas fa-percentage"></i> Margem de Lucro (%)
+                                </label>
+                                <input type="number" id="profitMargin" value="30" min="0" step="0.1" placeholder="Ex: 30">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="failureRate">
+                                    <i class="fas fa-exclamation-triangle"></i> Taxa de Falha (%)
+                                </label>
+                                <input type="number" id="failureRate" value="5" min="0" max="100" step="0.1" placeholder="Ex: 5">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calculator"></i> Calcular
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearForm">
+                                <i class="fas fa-eraser"></i> Limpar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="calculator-result-card" id="resultCard" style="display: none;">
+                    <!-- Print Header (only visible when printing) -->
+                    <div class="print-header">
+                        <div class="print-logo-container">
+                            <img id="printLogo" src="" alt="" style="display: none;">
+                            <i class="fas fa-cube" id="printIcon"></i>
+                        </div>
+                        <h1 id="printAppName">Print Calc</h1>
+                        <p class="print-subtitle">Orçamento de Impressão 3D</p>
+                    </div>
+
+                    <!-- Screen version title -->
+                    <h3 class="no-print"><i class="fas fa-file-invoice-dollar"></i> Resultado do Cálculo</h3>
+                    
+                    <div class="result-summary">
+                        <div class="result-item">
+                            <span class="result-label">Nome do Modelo:</span>
+                            <span class="result-value" id="resultModelName">-</span>
+                        </div>
+                        <div class="result-item no-print">
+                            <span class="result-label">Impressora:</span>
+                            <span class="result-value" id="resultPrinter">-</span>
+                        </div>
+                        <div class="result-item no-print">
+                            <span class="result-label">Filamento:</span>
+                            <span class="result-value" id="resultFilament">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Peso:</span>
+                            <span class="result-value"><span id="resultWeight">0</span>g</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Tempo de Impressão:</span>
+                            <span class="result-value" id="resultTime">-</span>
+                        </div>
+                    </div>
+
+                    <div class="result-breakdown no-print">
+                        <h4>Detalhamento de Custos</h4>
+                        <div class="result-item">
+                            <span class="result-label">Custo do Material:</span>
+                            <span class="result-value">R$ <span id="resultMaterialCost">0.00</span></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Custo de Energia:</span>
+                            <span class="result-value">R$ <span id="resultEnergyCost">0.00</span></span>
+                        </div>
+                        <div class="result-item total">
+                            <span class="result-label">Custo Total (sem lucro):</span>
+                            <span class="result-value">R$ <span id="resultTotalCost">0.00</span></span>
+                        </div>
+                        <div class="result-item profit">
+                            <span class="result-label">Margem de Lucro (<span id="resultProfitPercent">0</span>%):</span>
+                            <span class="result-value">R$ <span id="resultProfitValue">0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div class="result-final-price">
+                        <div class="result-item final">
+                            <span class="result-label">Valor Total:</span>
+                            <span class="result-value">R$ <span id="resultFinalPrice">0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div class="result-actions no-print">
+                        <button class="btn btn-success" id="saveCalculation">
+                            <i class="fas fa-save"></i> Salvar no Histórico
+                        </button>
+                        <button class="btn btn-secondary" id="printResult">
+                            <i class="fas fa-print"></i> Imprimir Orçamento
+                        </button>
+                    </div>
+
+                    <!-- Print footer -->
+                    <div class="print-footer">
+                        <p>Orçamento gerado em <span id="printDate"></span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard & History Page -->
+        <section class="page" id="dashboardPage">
+            <div class="page-header">
+                <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                <p>Visão geral dos seus cálculos, estatísticas e histórico completo</p>
+            </div>
+
+            <div class="dashboard-container">
+                <div class="stats-grid">
+                    <div class="stat-card-compact">
+                        <div class="stat-value">
+                            <span id="statTotalCalculations">0</span>
+                        </div>
+                        <div class="stat-label">Total de Orçamentos</div>
+                    </div>
+
+                    <div class="stat-card-compact stat-card-orange">
+                        <div class="stat-value">
+                            R$ <span id="statTotalValue">0.00</span>
+                        </div>
+                        <div class="stat-label">Valor Total</div>
+                    </div>
+
+                    <div class="stat-card-compact stat-card-green">
+                        <div class="stat-value">
+                            R$ <span id="statTotalProfit">0.00</span>
+                        </div>
+                        <div class="stat-label">Lucro Total</div>
+                    </div>
+
+                    <div class="stat-card-compact">
+                        <div class="stat-value">
+                            <span id="statTotalWeight">0</span>g
+                        </div>
+                        <div class="stat-label">Material Utilizado</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-pie"></i> Filamentos Mais Utilizados</h3>
+                        <canvas id="filamentsChart"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-bar"></i> Evolução de Custos</h3>
+                        <canvas id="costsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div class="history-section">
+                    <h2><i class="fas fa-history"></i> Histórico de Cálculos</h2>
+                    
+                    <div class="history-filters">
+                        <input type="text" id="historySearch" placeholder="Buscar por nome do modelo..." class="search-input">
+                        
+                        <div class="date-filters">
+                            <select id="filterPeriod" class="filter-select">
+                                <option value="all">Todos os períodos</option>
+                                <option value="today">Hoje</option>
+                                <option value="week">Esta semana</option>
+                                <option value="month">Este mês</option>
+                                <option value="year">Este ano</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                            
+                            <div id="customDateRange" style="display: none;">
+                                <input type="date" id="startDate" class="date-input">
+                                <span>até</span>
+                                <input type="date" id="endDate" class="date-input">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary" id="clearHistory">
+                            <i class="fas fa-trash"></i> Limpar Histórico
+                        </button>
+                    </div>
+
+                    <div class="history-table-container">
+                        <table class="history-table" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Modelo</th>
+                                    <th>Impressora</th>
+                                    <th>Filamento</th>
+                                    <th>Peso</th>
+                                    <th>Tempo</th>
+                                    <th>Custo Total</th>
+                                    <th>Preço Final</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- History items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Config Page -->
+        <section class="page" id="configPage">
+            <div class="page-header">
+                <h1><i class="fas fa-cog"></i> Configurações</h1>
+                <p>Configure filamentos, impressoras e personalização</p>
+            </div>
+
+            <div class="config-tabs">
+                <button class="tab-btn active" data-tab="filaments">
+                    <i class="fas fa-boxes"></i> Filamentos
+                </button>
+                <button class="tab-btn" data-tab="printers">
+                    <i class="fas fa-print"></i> Impressoras
+                </button>
+                <button class="tab-btn" data-tab="customization">
+                    <i class="fas fa-palette"></i> Personalização
+                </button>
+            </div>
+
+            <!-- Filaments Tab -->
+            <div class="tab-content active" id="filamentsTab">
+                <div class="tab-header">
+                    <h2><i class="fas fa-boxes"></i> Gerenciar Filamentos</h2>
+                    <button class="btn btn-primary" id="addFilamentBtn">
+                        <i class="fas fa-plus"></i> Adicionar Filamento
+                    </button>
+                </div>
+                <div class="filaments-grid" id="filamentsGrid">
+                    <!-- Filaments will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Printers Tab -->
+            <div class="tab-content" id="printersTab">
+                <div class="tab-header">
+                    <h2><i class="fas fa-print"></i> Gerenciar Impressoras</h2>
+                    <button class="btn btn-primary" id="addPrinterBtn">
+                        <i class="fas fa-plus"></i> Adicionar Impressora
+                    </button>
+                </div>
+                <div class="printers-grid" id="printersGrid">
+                    <!-- Printers will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Customization Tab -->
+            <div class="tab-content" id="customizationTab">
+                <div class="tab-header">
+                    <h2><i class="fas fa-palette"></i> Personalização</h2>
+                </div>
+                <div class="customization-container">
+                    <form id="customizationForm">
+                        <div class="config-card">
+                            <h3><i class="fas fa-signature"></i> Nome da Aplicação</h3>
+                            <div class="form-group">
+                                <label for="appNameInput">Nome da Calculadora</label>
+                                <input type="text" id="appNameInput" placeholder="Ex: Print Calc Pro">
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h3><i class="fas fa-palette"></i> Cores do Tema</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="primaryColorInput">Cor de Tema</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="primaryColorPicker" value="#667eea">
+                                        <input type="text" id="primaryColorInput" placeholder="#667eea">
+                                    </div>
+                                    <small>Cor principal da interface e gradientes</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secondaryColorInput">Cor Secundária</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="secondaryColorPicker" value="#764ba2">
+                                        <input type="text" id="secondaryColorInput" placeholder="#764ba2">
+                                    </div>
+                                    <small>Cor de gradiente e destaques</small>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="backgroundColorInput">Cor de Fundo</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="backgroundColorPicker" value="#f7fafc">
+                                        <input type="text" id="backgroundColorInput" placeholder="#f7fafc">
+                                    </div>
+                                    <small>Cor de fundo da página (modo claro)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="buttonColorInput">Cor dos Botões</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="buttonColorPicker" value="#667eea">
+                                        <input type="text" id="buttonColorInput" placeholder="#667eea">
+                                    </div>
+                                    <small>Cor de botões e elementos interativos</small>
+                                </div>
+                            </div>
+                            <div class="color-preview">
+                                <div class="preview-gradient" id="colorPreview"></div>
+                                <p>Prévia do gradiente (Tema + Secundária)</p>
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h3><i class="fas fa-image"></i> Logotipo</h3>
+                            <p class="config-card-description">O logo será exibido no menu lateral e nos orçamentos impressos.</p>
+                            <div class="form-group">
+                                <label for="logoInput">Upload do Logo</label>
+                                <input type="file" id="logoInput" accept="image/*">
+                                <small>Formatos aceitos: JPG, PNG, SVG (máx. 2MB). Recomendado: 200x200px</small>
+                            </div>
+                            <div id="logoPreview" class="logo-preview" style="display: none;">
+                                <img id="logoPreviewImg" src="" alt="Preview">
+                                <button type="button" class="btn btn-secondary btn-sm" id="removeLogo">
+                                    <i class="fas fa-times"></i> Remover Logo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Personalização
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetCustomization">
+                                <i class="fas fa-undo"></i> Restaurar Padrão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Add/Edit Filament -->
+    <div class="modal" id="filamentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="filamentModalTitle">
+                    <i class="fas fa-box"></i> Adicionar Filamento
+                </h3>
+                <button class="modal-close" id="closeFilamentModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="filamentForm">
+                <input type="hidden" id="filamentId">
+                <div class="form-group">
+                    <label for="filamentName">Nome do Filamento</label>
+                    <input type="text" id="filamentName" required placeholder="Ex: PLA Branco">
+                </div>
+                <div class="form-group">
+                    <label for="filamentType">Tipo</label>
+                    <select id="filamentType" required>
+                        <option value="PLA">PLA</option>
+                        <option value="ABS">ABS</option>
+                        <option value="PETG">PETG</option>
+                        <option value="TPU">TPU</option>
+                        <option value="Nylon">Nylon</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filamentColor">Nome da Cor</label>
+                    <input type="text" id="filamentColor" required placeholder="Ex: Branco">
+                </div>
+                <div class="form-group">
+                    <label for="filamentColorHex">Cor Visual</label>
+                    <div class="color-input-group">
+                        <input type="color" id="filamentColorPicker" value="#FFFFFF">
+                        <input type="text" id="filamentColorHex" placeholder="#FFFFFF">
+                    </div>
+                    <small>Cor que será exibida ao selecionar o filamento</small>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="filamentQuantity">Quantidade (gramas)</label>
+                        <input type="number" id="filamentQuantity" required min="0" step="1" placeholder="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="filamentPrice">Preço do Rolo (R$)</label>
+                        <input type="number" id="filamentPrice" required min="0" step="0.01" placeholder="50.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Preço por Grama: R$ <span id="pricePerGram">0.00</span></label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelFilamentModal">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Printer -->
+    <div class="modal" id="printerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="printerModalTitle">
+                    <i class="fas fa-print"></i> Adicionar Impressora
+                </h3>
+                <button class="modal-close" id="closePrinterModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="printerForm">
+                <input type="hidden" id="printerId">
+                <div class="form-group">
+                    <label for="printerName">Nome da Impressora</label>
+                    <input type="text" id="printerName" required placeholder="Ex: Impressora Principal">
+                </div>
+                <div class="form-group">
+                    <label for="printerModel">Modelo</label>
+                    <input type="text" id="printerModel" required placeholder="Ex: Ender 3 V2">
+                </div>
+                <div class="form-group">
+                    <label for="printerPower">Consumo de Energia (Watts)</label>
+                    <input type="number" id="printerPower" required min="0" step="1" placeholder="200">
+                    <small>Potência média durante a impressão</small>
+                </div>
+                <div class="form-group">
+                    <label for="printerEnergyCost">Custo por kWh (R$)</label>
+                    <input type="number" id="printerEnergyCost" required min="0" step="0.01" placeholder="0.80">
+                    <small>Tarifa de energia da sua região</small>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelPrinterModal">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
