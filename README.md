@@ -390,31 +390,97 @@ Para dúvidas ou sugestões, consulte a documentação ou entre em contato.
 
 ## 📝 Changelog
 
-### Versão 2.4 (Atual)
+### Versão 2.7 (Atual) - 2026-03-01
+- ⚙️ **PERSONALIZAÇÃO REFORMULADA**:
+  - Botões de Salvar e Restaurar individuais por card (Nome, Cores, Logo)
+  - Simplificação: removida cor secundária e cor de botões (apenas Cor de Tema e Cor de Fundo)
+  - Valores padrão atualizados: #002fff (azul) e #c4dae9 (cinza-azulado)
+  - Cor de fundo agora altera apenas o body, não os inputs/cards
+  - Valor Total usa a cor primária do tema (em vez de verde fixo)
+- 🐛 **CORREÇÕES**:
+  - Nome do app agora salva corretamente
+  - Botão Restaurar Padrão funciona para cada seção
+  - Peso no PDF corrigido (17g em vez de 17.00gg)
+- 🎨 **UNIFICAÇÃO DE CORES**:
+  - Valor Total, botões e destaques usam a mesma cor primária
+  - Design mais coeso e profissional
+
+### Versão 2.6 - 2026-02-28
+- 📱 **RESPONSIVIDADE MOBILE TOTAL REFINADA**:
+  - Fontes fixas em 16px (previne zoom automático iOS)
+  - Espaçamento compacto e otimizado
+  - Layout totalmente ajustado para visualização sem scroll horizontal
+  - Overflow-x: hidden em html e body
+  - Quebra inteligente de linhas em todos os elementos
+- 🎨 **DASHBOARD COMPLETAMENTE REORGANIZADO**:
+  - Nova ordem lógica: Orçamento → Material → Lucro → Valor Total
+  - Cores diferenciadas e sem efeito incandescente:
+    - 🔵 Azul (#007bff): Total de Orçamentos
+    - 🟪 Roxo (#6f42c1): Material Utilizado
+    - 🟢 Verde (#28a745): Lucro Total
+    - 🟠 Laranja (#ff9500): Valor Total
+  - Mantido layout 2x2 (dois cards por linha)
+  - Fontes mobile: 1.4rem (valor) / 0.7rem (label)
+  - Padding otimizado: 0.9rem no mobile
+- 📋 **HISTÓRICO EM CARDS**:
+  - Substituição completa da tabela por cards modernos
+  - Campos exibidos: Data, Modelo, Peso, Tempo, Custo Total, Preço Final
+  - Botões integrados: Visualizar e Excluir
+  - Grid responsivo: 1 coluna no mobile, múltiplas colunas no desktop
+  - Design limpo com bordas coloridas
+- 🔍 **FILTROS OTIMIZADOS MOBILE**:
+  - Campo de pesquisa em linha completa
+  - Botões "Filtro" e "Limpar" lado a lado
+  - Layout flex com wrap para telas pequenas
+  - Melhor usabilidade em dispositivos móveis
+- 🐛 **CORREÇÕES CRÍTICAS**:
+  - Form com `onsubmit="return false;"` previne reload
+  - Função `saveCustomization()` valida e salva nome do app corretamente
+  - `renderHistoryTable()` agora renderiza apenas cards (sem tabela)
+  - Todos os listeners de eventos funcionando perfeitamente
+- 🛠️ **MENU MOBILE APERFEIÇOADO**:
+  - Desliza do lado direito (transform: translateX(100%))
+  - Botão menu posicionado no canto superior direito
+  - Botão dark mode no rodapé do sidebar (sem cortes)
+  - Fecha automaticamente ao navegar
+
+### Versão 2.4 - 2026-02-27
 - 📱 **RESPONSIVIDADE MOBILE COMPLETA**: correção de todos os elementos cortados
   - Textos e campos ajustados para não ultrapassar a largura da tela
   - Prevenção de zoom automático no iOS (campos com font-size 16px)
   - Quebra de linha inteligente em labels e valores
   - Overflow-x: hidden em todos os elementos críticos
-- 🎨 **Cards do Dashboard redesenhados**:
-  - 2 cards por linha (4 cards no total)
+- 🎨 **Cards do Dashboard redesenhados e reorganizados**:
+  - Ordem: Orçamento, Material Utilizado, Lucro Total, Valor Total
+  - Cores distintas por card:
+    - Azul (#4facfe): Total de Orçamentos
+    - Roxo (#9b59b6): Material Utilizado
+    - Verde (#28a745): Lucro Total
+    - Laranja (#ff9500): Valor Total
+  - 2 cards por linha (layout 2×2)
   - Ícones removidos para economia de espaço
   - Layout compacto: valor em destaque + label abaixo
   - Padding reduzido e fontes otimizadas para mobile
-- 🎨 **Cores do Dashboard atualizadas**:
-  - Lucro Total e Preço Final: verde padrão (#28a745) em vez do incandescente
-  - Valor Total: laranja (#ff9500)
-  - Melhor legibilidade e profissionalismo
+- 📊 **Histórico em cards mobile**:
+  - Layout simplificado com informações essenciais
+  - Exibe: Data, Peso, Tempo, Custo, Preço Final
+  - Botões de ação compactos (Detalhes, Excluir)
+  - Filtros reorganizados: campo de pesquisa em linha, botões Filtro e Limpar lado a lado
 - 🖨️ **Exportação PDF corrigida**:
   - Margens ajustadas para A4 (1cm)
   - Fontes reduzidas para caber no papel
   - Valor final em destaque com tamanho proporcional
   - Padding e espaçamentos otimizados
   - Nenhum elemento cortado na impressão
+- 🐛 **Correção de bugs críticos**:
+  - Botão "Calcular" não executava função (adicionado ID `calculateBtn` e listener de submit no form)
+  - Personalização não salvava nome do aplicativo (evento de submit configurado corretamente)
+  - Cards mobile aparecem agora em telas pequenas (estrutura `.history-cards` adicionada ao HTML)
 - 📱 **Menu mobile otimizado**:
+  - Posicionado à direita (desliza da direita para esquerda)
   - Tela inteira quando aberto
   - Fecha automaticamente ao clicar em links
-  - Botão de toggle visível e funcional
+  - Botão dark mode reposicionado para não ser cortado
 - 📊 **Gráficos ocultados no mobile** para melhor performance e foco nos cards
 - 🔧 **Listas compactas em mobile**: filamentos e impressoras exibidos em lista em vez de cards grandes
 
@@ -474,4 +540,4 @@ Este projeto foi desenvolvido como uma ferramenta personalizada de gestão de cu
 
 **Desenvolvido com 💙 para a comunidade de impressão 3D**
 
-*Última atualização: 2026-02-27 - Versão 2.4*
+*Última atualização: 2026-03-01 - Versão 2.7*
