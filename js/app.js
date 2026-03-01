@@ -3,6 +3,9 @@
 // Para uso no GitHub Pages sem backend
 // ========================================
 
+console.log('🚀 Print Calc v2.5 - Loading...');
+console.log('ℹ️ Available commands: debugPrintCalc(), resetPrintCalc(), testCalculation()');
+
 // ========================================
 // LocalStorage Database Handler
 // ========================================
@@ -113,6 +116,65 @@ const APP_STATE = {
 };
 
 // ========================================
+// Debug & Utility Functions
+// ========================================
+// Debug function - accessible via console
+window.debugPrintCalc = function() {
+    console.log('========================================');
+    console.log('🔧 PRINT CALC DEBUG INFO');
+    console.log('========================================');
+    const db = LocalDB.getDB();
+    console.log('💾 LocalStorage DB:', db);
+    console.log('🖨️ Printers (' + (db.printers?.length || 0) + '):', db.printers);
+    console.log('🎨 Filaments (' + (db.filaments?.length || 0) + '):', db.filaments);
+    console.log('📊 Calculations (' + (db.calculations?.length || 0) + '):', db.calculations);
+    console.log('🎭 Customization:', db.customization);
+    console.log('📦 APP_STATE:', APP_STATE);
+    console.log('========================================');
+    console.log('✅ Debug info displayed above');
+    return 'Debug completed! Check the logs above ⬆️';
+};
+
+// Reset function - accessible via console
+window.resetPrintCalc = function() {
+    if (confirm('⚠️ Isso irá apagar TODOS os dados (impressoras, filamentos, histórico). Deseja continuar?')) {
+        LocalDB.clearAll();
+        localStorage.removeItem('theme');
+        localStorage.removeItem('sidebarCollapsed');
+        console.log('✅ Dados resetados com sucesso!');
+        console.log('🔄 Recarregando página...');
+        location.reload();
+    }
+};
+
+// Test calculation function
+window.testCalculation = function() {
+    console.log('🧪 Testing calculation function...');
+    console.log('Form element:', document.getElementById('calculatorForm'));
+    console.log('Calculate button:', document.getElementById('calculateBtn'));
+    console.log('Result card:', document.getElementById('resultCard'));
+    
+    const printers = LocalDB.getTable('printers');
+    const filaments = LocalDB.getTable('filaments');
+    
+    if (printers.length === 0) {
+        console.error('❌ No printers registered! Go to Config > Printers and add one.');
+        return '❌ No printers found';
+    }
+    
+    if (filaments.length === 0) {
+        console.error('❌ No filaments registered! Go to Config > Filaments and add one.');
+        return '❌ No filaments found';
+    }
+    
+    console.log('✅ Found ' + printers.length + ' printer(s) and ' + filaments.length + ' filament(s)');
+    console.log('Try filling the form and clicking Calculate now.');
+    return '✅ Ready to calculate!';
+};
+
+console.log('✅ Debug functions registered: debugPrintCalc(), resetPrintCalc(), testCalculation()');
+
+// ========================================
 // Initialization
 // ========================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -120,6 +182,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeApp() {
+    console.log('🚀 Initializing Print Calc...');
+    
     // Load saved theme preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -153,6 +217,16 @@ async function initializeApp() {
     await loadCalculations();
     
     renderDashboard();
+    
+    // Final initialization check
+    console.log('✅ App initialized successfully!');
+    console.log('📊 Stats:', {
+        printers: APP_STATE.printers.length,
+        filaments: APP_STATE.filaments.length,
+        calculations: APP_STATE.calculations.length,
+        hasCustomization: !!APP_STATE.customization
+    });
+    console.log('💡 Tip: Run debugPrintCalc() in console to see all data');
 }
 
 // ========================================
@@ -293,7 +367,7 @@ async function loadCustomization() {
 function applyCustomization() {
     if (!APP_STATE.customization) return;
     
-    const { app_name, primary_color, secondary_color, background_color, logo_url } = APP_STATE.customization;
+    const { app_name, gradient1_color, gradient2_color, button_color, logo_url } = APP_STATE.customization;
     
     // Update app name
     if (app_name) {
@@ -301,37 +375,175 @@ function applyCustomization() {
             el.textContent = app_name;
         });
         document.title = app_name;
+        
+        // Update print header
+        const printAppName = document.getElementById('printAppName');
+        if (printAppName) printAppName.textContent = app_name;
     }
     
-    // Update colors
-    if (primary_color) {
-        document.documentElement.style.setProperty('--primary-color', primary_color);
+    // Update gradient colors
+    if (gradient1_color) {
+        document.documentElement.style.setProperty('--primary-color', gradient1_color);
     }
-    if (secondary_color) {
-        document.documentElement.style.setProperty('--secondary-color', secondary_color);
+    if (gradient2_color) {
+        document.documentElement.style.setProperty('--secondary-color', gradient2_color);
     }
-    if (background_color) {
-        document.documentElement.style.setProperty('--bg-primary', background_color);
+    
+    // Update button color (usado em botões, links, valor final)
+    if (button_color) {
+        document.documentElement.style.setProperty('--success-color', button_color);
+        // Usar também nos botões primários
+        const style = document.createElement('style');
+        style.id = 'custom-button-style';
+        style.textContent = `
+            .btn-primary {
+                background: ${button_color} !important;
+                border-color: ${button_color} !important;
+            }
+            .btn-primary:hover {
+                opacity: 0.9;
+            }
+            .result-value-final {
+                color: ${button_color} !important;
+            }
+        `;
+        // Remove estilo anterior se existir
+        const oldStyle = document.getElementById('custom-button-style');
+        if (oldStyle) oldStyle.remove();
+        document.head.appendChild(style);
+    }
+    
+    // Update preview gradient
+    const colorPreview = document.getElementById('colorPreview');
+    if (colorPreview && gradient1_color && gradient2_color) {
+        colorPreview.style.background = `linear-gradient(135deg, ${gradient1_color} 0%, ${gradient2_color} 100%)`;
     }
     
     // Update logo
     const logoElements = document.querySelectorAll('#appLogo, #printLogo');
+    const iconElements = document.querySelectorAll('#appIcon, #printIcon');
+    
     if (logo_url) {
         logoElements.forEach(logo => {
             logo.src = logo_url;
             logo.style.display = 'block';
         });
+        iconElements.forEach(icon => icon.style.display = 'none');
+        
+        // Show logo preview
+        const logoPreview = document.getElementById('logoPreview');
+        const logoPreviewImg = document.getElementById('logoPreviewImg');
+        if (logoPreview && logoPreviewImg) {
+            logoPreviewImg.src = logo_url;
+            logoPreview.style.display = 'flex';
+        }
+    } else {
+        logoElements.forEach(logo => logo.style.display = 'none');
+        iconElements.forEach(icon => icon.style.display = 'block');
     }
 }
 
 function setupCustomizationForm() {
-    const form = document.getElementById('customizationForm');
-    if (!form) return;
+    console.log('⚙️ Setting up customization form...');
     
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await saveCustomization();
-    });
+    // Botão Salvar Nome
+    const saveAppNameBtn = document.getElementById('saveAppNameBtn');
+    if (saveAppNameBtn) {
+        saveAppNameBtn.addEventListener('click', async () => {
+            const appName = document.getElementById('appNameInput').value.trim();
+            if (!appName) {
+                showNotification('Por favor, insira um nome para a aplicação', 'error');
+                return;
+            }
+            
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.app_name = appName;
+            LocalDB.saveDB(db);
+            
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            showNotification('Nome salvo com sucesso!', 'success');
+        });
+    }
+    
+    // Botão Restaurar Nome
+    const resetAppNameBtn = document.getElementById('resetAppNameBtn');
+    if (resetAppNameBtn) {
+        resetAppNameBtn.addEventListener('click', () => {
+            document.getElementById('appNameInput').value = 'Print Calc';
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.app_name = 'Print Calc';
+            LocalDB.saveDB(db);
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            showNotification('Nome restaurado!', 'success');
+        });
+    }
+    
+    // Botão Salvar Cores
+    const saveColorsBtn = document.getElementById('saveColorsBtn');
+    if (saveColorsBtn) {
+        saveColorsBtn.addEventListener('click', async () => {
+            const gradient1 = document.getElementById('gradient1Input').value;
+            const gradient2 = document.getElementById('gradient2Input').value;
+            const buttonColor = document.getElementById('buttonColorInput').value;
+            
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.gradient1_color = gradient1;
+            db.customization.gradient2_color = gradient2;
+            db.customization.button_color = buttonColor;
+            LocalDB.saveDB(db);
+            
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            showNotification('Cores salvas com sucesso!', 'success');
+        });
+    }
+    
+    // Botão Restaurar Cores
+    const resetColorsBtn = document.getElementById('resetColorsBtn');
+    if (resetColorsBtn) {
+        resetColorsBtn.addEventListener('click', () => {
+            // Gradiente 1
+            document.getElementById('gradient1Input').value = '#556ef0';
+            document.getElementById('gradient1Picker').value = '#556ef0';
+            // Gradiente 2
+            document.getElementById('gradient2Input').value = '#754da6';
+            document.getElementById('gradient2Picker').value = '#754da6';
+            // Cor de botões
+            document.getElementById('buttonColorInput').value = '#556ef0';
+            document.getElementById('buttonColorPicker').value = '#556ef0';
+            
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.gradient1_color = '#556ef0';
+            db.customization.gradient2_color = '#754da6';
+            db.customization.button_color = '#556ef0';
+            LocalDB.saveDB(db);
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            showNotification('Cores restauradas!', 'success');
+        });
+    }
+    
+    // Botão Restaurar Logo
+    const resetLogoBtn = document.getElementById('resetLogoBtn');
+    if (resetLogoBtn) {
+        resetLogoBtn.addEventListener('click', () => {
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.logo_url = '';
+            LocalDB.saveDB(db);
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('logoInput').value = '';
+            showNotification('Logo restaurado!', 'success');
+        });
+    }
     
     // Logo upload
     const logoInput = document.getElementById('logoInput');
@@ -339,13 +551,50 @@ function setupCustomizationForm() {
         logoInput.addEventListener('change', handleLogoUpload);
     }
     
+    // Remove logo
+    const removeLogo = document.getElementById('removeLogo');
+    if (removeLogo) {
+        removeLogo.addEventListener('click', () => {
+            const db = LocalDB.getDB();
+            if (!db.customization) db.customization = {};
+            db.customization.logo_url = '';
+            LocalDB.saveDB(db);
+            APP_STATE.customization = db.customization;
+            applyCustomization();
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('logoInput').value = '';
+            showNotification('Logo removido!', 'success');
+        });
+    }
+    
     // Color pickers sync
-    setupColorSync('primaryColor');
-    setupColorSync('secondaryColor');
-    setupColorSync('backgroundColor');
+    setupColorSync('gradient1');
+    setupColorSync('gradient2');
+    setupColorSync('buttonColor');
+    
+    // Update preview on color change
+    ['gradient1', 'gradient2'].forEach(name => {
+        const picker = document.getElementById(`${name}Picker`);
+        const input = document.getElementById(`${name}Input`);
+        if (picker) {
+            picker.addEventListener('input', updateColorPreview);
+        }
+        if (input) {
+            input.addEventListener('input', updateColorPreview);
+        }
+    });
     
     // Load current values
     loadCustomizationForm();
+}
+
+function updateColorPreview() {
+    const gradient1 = document.getElementById('gradient1Input')?.value || '#556ef0';
+    const gradient2 = document.getElementById('gradient2Input')?.value || '#754da6';
+    const colorPreview = document.getElementById('colorPreview');
+    if (colorPreview) {
+        colorPreview.style.background = `linear-gradient(135deg, ${gradient1} 0%, ${gradient2} 100%)`;
+    }
 }
 
 function setupColorSync(colorName) {
@@ -365,24 +614,33 @@ function setupColorSync(colorName) {
 }
 
 function loadCustomizationForm() {
-    if (!APP_STATE.customization) return;
-    
-    const { app_name, primary_color, secondary_color, background_color } = APP_STATE.customization;
-    
-    document.getElementById('appNameInput').value = app_name || '';
-    
-    if (primary_color) {
-        document.getElementById('primaryColorInput').value = primary_color;
-        document.getElementById('primaryColorPicker').value = primary_color;
+    if (!APP_STATE.customization) {
+        // Load defaults
+        updateColorPreview();
+        return;
     }
-    if (secondary_color) {
-        document.getElementById('secondaryColorInput').value = secondary_color;
-        document.getElementById('secondaryColorPicker').value = secondary_color;
+    
+    const { app_name, gradient1_color, gradient2_color, button_color } = APP_STATE.customization;
+    
+    if (app_name) {
+        document.getElementById('appNameInput').value = app_name;
     }
-    if (background_color) {
-        document.getElementById('backgroundColorInput').value = background_color;
-        document.getElementById('backgroundColorPicker').value = background_color;
+    
+    if (gradient1_color) {
+        document.getElementById('gradient1Input').value = gradient1_color;
+        document.getElementById('gradient1Picker').value = gradient1_color;
     }
+    if (gradient2_color) {
+        document.getElementById('gradient2Input').value = gradient2_color;
+        document.getElementById('gradient2Picker').value = gradient2_color;
+    }
+    if (button_color) {
+        document.getElementById('buttonColorInput').value = button_color;
+        document.getElementById('buttonColorPicker').value = button_color;
+    }
+    
+    // Update preview
+    updateColorPreview();
 }
 
 async function handleLogoUpload(e) {
@@ -419,10 +677,16 @@ async function handleLogoUpload(e) {
 }
 
 async function saveCustomization() {
-    const appName = document.getElementById('appNameInput').value;
+    const appName = document.getElementById('appNameInput').value.trim();
     const primaryColor = document.getElementById('primaryColorInput').value;
     const secondaryColor = document.getElementById('secondaryColorInput').value;
     const backgroundColor = document.getElementById('backgroundColorInput').value;
+    
+    // Validação básica
+    if (!appName) {
+        showNotification('Por favor, insira um nome para o aplicativo', 'error');
+        return;
+    }
     
     const customizationData = {
         app_name: appName,
@@ -669,15 +933,13 @@ function renderFilamentsList() {
     if (isMobile) {
         // Render as compact list on mobile
         grid.innerHTML = APP_STATE.filaments.map(filament => {
-            const colorStyle = filament.color_hex ? 
-                `<span class="color-swatch" style="background-color: ${filament.color_hex}; width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle;"></span>` : '';
+            const colorDot = filament.color_hex ? 
+                `<span style="display:inline-block; width:12px; height:12px; background:${filament.color_hex}; border-radius:50%; margin-right:0.5rem; vertical-align:middle; border:1px solid #ccc;"></span>` : '';
             
             return `
                 <div class="filament-card">
                     <div class="filament-card-content">
-                        <div class="filament-card-title">
-                            ${colorStyle}${filament.name}
-                        </div>
+                        <div class="filament-card-title">${colorDot}${filament.name}</div>
                         <div class="filament-card-info">
                             <span>${filament.type}</span>
                             <span>R$ ${filament.price_total.toFixed(2)} • ${filament.quantity_grams}g</span>
@@ -695,17 +957,19 @@ function renderFilamentsList() {
             `;
         }).join('');
     } else {
-        // Render as cards on desktop
+        // Render as cards on desktop (igual ao de impressora)
         grid.innerHTML = APP_STATE.filaments.map(filament => {
-            const colorStyle = filament.color_hex ? 
-                `style="background-color: ${filament.color_hex}; color: ${getContrastColor(filament.color_hex)};"` : '';
-            const colorSwatch = filament.color_hex ?
-                `<span class="color-swatch" style="background-color: ${filament.color_hex}; width: 24px; height: 24px; display: inline-block; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; border: 2px solid #ddd;"></span>` : '';
+            const colorPreview = filament.color_hex ?
+                `<div class="filament-color-preview" style="background: ${filament.color_hex}; width: 40px; height: 40px; border-radius: 8px; border: 2px solid #ddd;"></div>` : '';
             
             return `
-                <div class="filament-card" ${colorStyle}>
+                <div class="filament-card">
                     <div class="filament-header">
-                        <h3>${filament.name}${colorSwatch}</h3>
+                        <div class="filament-title">
+                            <h3>${filament.name}</h3>
+                            <p class="filament-type">${filament.type}</p>
+                        </div>
+                        ${colorPreview}
                         <div class="filament-actions">
                             <button onclick="editFilament('${filament.id}')" title="Editar">
                                 <i class="fas fa-edit"></i>
@@ -715,11 +979,19 @@ function renderFilamentsList() {
                             </button>
                         </div>
                     </div>
-                    <div class="filament-details">
-                        <p><strong>Tipo:</strong> ${filament.type}</p>
-                        <p><strong>Preço Total:</strong> R$ ${filament.price_total.toFixed(2)}</p>
-                        <p><strong>Quantidade:</strong> ${filament.quantity_grams} g</p>
-                        <p><strong>Preço/g:</strong> R$ ${filament.price_per_gram.toFixed(4)}</p>
+                    <div class="filament-info">
+                        <div class="filament-info-item">
+                            <span>Preço Total</span>
+                            <span>R$ ${filament.price_total.toFixed(2)}</span>
+                        </div>
+                        <div class="filament-info-item">
+                            <span>Quantidade</span>
+                            <span>${filament.quantity_grams}g</span>
+                        </div>
+                        <div class="filament-info-item">
+                            <span>Preço/Grama</span>
+                            <span>R$ ${filament.price_per_gram.toFixed(2)}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -778,6 +1050,23 @@ function setupFilamentForm() {
             e.preventDefault();
             await saveFilament();
         });
+        
+        // Sync color picker and hex input
+        const colorPicker = document.getElementById('filamentColorPicker');
+        const colorHex = document.getElementById('filamentColorHex');
+        
+        if (colorPicker && colorHex) {
+            colorPicker.addEventListener('input', () => {
+                colorHex.value = colorPicker.value.toUpperCase();
+            });
+            
+            colorHex.addEventListener('input', () => {
+                const hexValue = colorHex.value.trim();
+                if (/^#[0-9A-F]{6}$/i.test(hexValue)) {
+                    colorPicker.value = hexValue;
+                }
+            });
+        }
         
         // Auto-calculate price per gram
         const quantityInput = document.getElementById('filamentQuantity');
@@ -846,7 +1135,7 @@ function editFilament(id) {
     document.getElementById('filamentName').value = filament.name;
     document.getElementById('filamentType').value = filament.type;
     document.getElementById('filamentColor').value = filament.color || '';
-    document.getElementById('filamentColorHex').value = filament.color_hex || '#667eea';
+    document.getElementById('filamentColorHex').value = filament.color_hex || '#000000'; // Preto por padrão
     document.getElementById('filamentQuantity').value = filament.quantity_grams;
     document.getElementById('filamentPrice').value = filament.price_total;
     
@@ -876,17 +1165,37 @@ async function deleteFilament(id) {
 // Calculator Functions
 // ========================================
 function setupCalculatorForm() {
+    console.log('🛠️ Setting up calculator form...');
+    
     const form = document.getElementById('calculatorForm');
     const calculateBtn = document.getElementById('calculateBtn');
     const clearBtn = document.getElementById('clearBtn');
     const saveBtn = document.getElementById('saveCalculation');
     const printBtn = document.getElementById('printBudget');
     
+    console.log('Form elements:', { form, calculateBtn, clearBtn, saveBtn, printBtn });
+    
+    // Prevent form submission from reloading the page
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('📤 Form submitted - calling calculatePrintCost()');
+            calculatePrintCost();
+        });
+        console.log('✅ Form submit listener added');
+    } else {
+        console.error('❌ Form element not found!');
+    }
+    
     if (calculateBtn) {
         calculateBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            console.log('🔘 Calculate button clicked');
             calculatePrintCost();
         });
+        console.log('✅ Calculate button listener added');
+    } else {
+        console.error('❌ Calculate button not found!');
     }
     
     if (clearBtn) {
@@ -910,6 +1219,8 @@ function setupCalculatorForm() {
 }
 
 function calculatePrintCost() {
+    console.log('🧮 calculatePrintCost() called');
+    
     // Get form values
     const modelName = document.getElementById('modelName').value.trim();
     const printerId = document.getElementById('printerSelect').value;
@@ -920,27 +1231,39 @@ function calculatePrintCost() {
     const failureRate = parseFloat(document.getElementById('failureRate').value) || 0;
     const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
     
+    console.log('📝 Form values:', { modelName, printerId, filamentId, weight, hours, minutes, failureRate, profitMargin });
+    
     // Validate required fields
     if (!printerId) {
+        console.error('❌ No printer selected');
         showNotification('Selecione uma impressora', 'error');
         return;
     }
     
     if (!filamentId) {
+        console.error('❌ No filament selected');
         showNotification('Selecione um filamento', 'error');
         return;
     }
     
     // Get printer and filament data
+    console.log('🔍 Looking for printer ID:', printerId);
+    console.log('🔍 Looking for filament ID:', filamentId);
+    
     const printer = LocalDB.getItem('printers', printerId);
     const filament = LocalDB.getItem('filaments', filamentId);
     
+    console.log('🖨️ Printer found:', printer);
+    console.log('🎨 Filament found:', filament);
+    
     if (!printer) {
+        console.error('❌ Printer not found in database');
         showNotification('Impressora não encontrada', 'error');
         return;
     }
     
     if (!filament) {
+        console.error('❌ Filament not found in database');
         showNotification('Filamento não encontrado', 'error');
         return;
     }
@@ -955,6 +1278,15 @@ function calculatePrintCost() {
     const totalCost = baseCost + failureCost + energyCost;
     const profitValue = baseCost * (profitMargin / 100);
     const finalPrice = totalCost + profitValue;
+    
+    console.log('💰 Calculations:', {
+        baseCost: baseCost.toFixed(2),
+        failureCost: failureCost.toFixed(2),
+        energyCost: energyCost.toFixed(2),
+        totalCost: totalCost.toFixed(2),
+        profitValue: profitValue.toFixed(2),
+        finalPrice: finalPrice.toFixed(2)
+    });
     
     // Format time for display
     const timeFormatted = `${hours}h ${minutes.toString().padStart(2, '0')}min`;
@@ -980,29 +1312,54 @@ function calculatePrintCost() {
         calculation_date: new Date().toISOString()
     };
     
+    console.log('✅ Calculation completed:', APP_STATE.currentCalculation);
+    
     // Display results
     displayCalculationResults();
+    console.log('✅ Results displayed');
 }
 
 function displayCalculationResults() {
+    console.log('📊 displayCalculationResults() called');
+    
     const calc = APP_STATE.currentCalculation;
+    console.log('Calculation data:', calc);
     
     // Show result card
     const resultCard = document.getElementById('resultCard');
+    console.log('Result card element:', resultCard);
+    
+    if (!resultCard) {
+        console.error('❌ Result card element not found!');
+        return;
+    }
+    
     resultCard.style.display = 'block';
+    console.log('✅ Result card displayed');
     
     // Fill in the values
-    document.getElementById('resultModelName').textContent = calc.model_name || 'N/A';
-    document.getElementById('resultPrinter').textContent = calc.printer_name;
-    document.getElementById('resultFilament').textContent = calc.filament_name;
-    document.getElementById('resultWeight').textContent = `${calc.weight_grams.toFixed(2)}g`;
-    document.getElementById('resultTime').textContent = calc.print_time_formatted;
-    document.getElementById('resultMaterialCost').textContent = `R$ ${calc.material_cost.toFixed(2)}`;
-    document.getElementById('resultEnergyCost').textContent = `R$ ${calc.energy_cost.toFixed(2)}`;
-    document.getElementById('resultTotalCost').textContent = `R$ ${calc.total_cost.toFixed(2)}`;
-    document.getElementById('resultProfitMargin').textContent = `${calc.profit_margin_percent.toFixed(0)}%`;
-    document.getElementById('resultProfitValue').textContent = `R$ ${calc.profit_value.toFixed(2)}`;
-    document.getElementById('resultFinalPrice').textContent = `R$ ${calc.final_price.toFixed(2)}`;
+    try {
+        document.getElementById('resultModelName').textContent = calc.model_name || 'N/A';
+        document.getElementById('resultPrinter').textContent = calc.printer_name;
+        document.getElementById('resultFilament').textContent = calc.filament_name;
+        document.getElementById('resultWeight').textContent = Math.round(calc.weight_grams); // Sem decimais
+        document.getElementById('resultTime').textContent = calc.print_time_formatted;
+        document.getElementById('resultMaterialCost').textContent = calc.material_cost.toFixed(2);
+        document.getElementById('resultEnergyCost').textContent = calc.energy_cost.toFixed(2);
+        document.getElementById('resultTotalCost').textContent = calc.total_cost.toFixed(2);
+        document.getElementById('resultProfitMargin').textContent = calc.profit_margin_percent.toFixed(0);
+        document.getElementById('resultProfitValue').textContent = calc.profit_value.toFixed(2);
+        
+        const finalPriceElement = document.getElementById('resultFinalPrice');
+        console.log('🎯 Final price element:', finalPriceElement);
+        console.log('🎯 Final price value:', calc.final_price);
+        finalPriceElement.textContent = calc.final_price.toFixed(2); // Sem R$ duplicado
+        console.log('🎯 Final price element after update:', finalPriceElement.textContent);
+        
+        console.log('✅ All result fields populated');
+    } catch (error) {
+        console.error('❌ Error filling result fields:', error);
+    }
     
     // Update print date
     const printDate = document.getElementById('printDate');
@@ -1015,6 +1372,12 @@ function displayCalculationResults() {
             hour: '2-digit',
             minute: '2-digit'
         });
+    }
+    
+    // Update print model name with prefix
+    const printModelName = document.getElementById('printModelName');
+    if (printModelName && calc.model_name) {
+        printModelName.textContent = `Orçamento - ${calc.model_name}`;
     }
     
     // Scroll to result
@@ -1085,8 +1448,9 @@ function setupHistoryHandlers() {
 }
 
 function renderHistoryTable() {
-    const tbody = document.getElementById('historyTableBody');
-    if (!tbody) return;
+    const cardsGrid = document.getElementById('historyCardsGrid');
+    
+    if (!cardsGrid) return;
     
     let filteredCalcs = [...APP_STATE.calculations];
     
@@ -1139,38 +1503,56 @@ function renderHistoryTable() {
     filteredCalcs.sort((a, b) => new Date(b.calculation_date) - new Date(a.calculation_date));
     
     if (filteredCalcs.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-inbox fa-2x" style="color: var(--text-tertiary); margin-bottom: 1rem;"></i>
-                    <p>Nenhum cálculo encontrado</p>
-                </td>
-            </tr>
+        cardsGrid.innerHTML = `
+            <div style="text-align: center; padding: 3rem; grid-column: 1/-1;">
+                <i class="fas fa-inbox" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem; display: block;"></i>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">Nenhum cálculo encontrado</p>
+            </div>
         `;
         return;
     }
     
-    tbody.innerHTML = filteredCalcs.map(calc => {
+    // Render cards
+    cardsGrid.innerHTML = filteredCalcs.map(calc => {
         const date = new Date(calc.calculation_date);
         const dateStr = date.toLocaleDateString('pt-BR');
         const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         
         return `
-            <tr>
-                <td>${dateStr} ${timeStr}</td>
-                <td>${calc.model_name}</td>
-                <td>${calc.printer_name}</td>
-                <td>${calc.weight_grams.toFixed(2)}g</td>
-                <td>R$ ${calc.final_price.toFixed(2)}</td>
-                <td>
-                    <button class="btn-icon" onclick="showCalculationDetails('${calc.id}')" title="Ver detalhes">
-                        <i class="fas fa-eye"></i>
+            <div class="history-card">
+                <div class="history-card-header">
+                    <h4>${calc.model_name}</h4>
+                    <div class="history-card-date">
+                        <i class="fas fa-calendar"></i> ${dateStr} ${timeStr}
+                    </div>
+                </div>
+                <div class="history-card-body">
+                    <div class="history-card-item">
+                        <label>Peso</label>
+                        <span>${calc.weight_grams.toFixed(2)}g</span>
+                    </div>
+                    <div class="history-card-item">
+                        <label>Tempo</label>
+                        <span>${calc.print_time_formatted}</span>
+                    </div>
+                    <div class="history-card-item">
+                        <label>Custo Total</label>
+                        <span>R$ ${calc.total_cost.toFixed(2)}</span>
+                    </div>
+                    <div class="history-card-item">
+                        <label>Preço Final</label>
+                        <span style="color: #28a745; font-weight: 700;">R$ ${calc.final_price.toFixed(2)}</span>
+                    </div>
+                </div>
+                <div class="history-card-actions">
+                    <button class="btn-view" onclick="showCalculationDetails('${calc.id}')">
+                        <i class="fas fa-eye"></i> Visualizar
                     </button>
-                    <button class="btn-icon" onclick="deleteCalculation('${calc.id}')" title="Excluir">
-                        <i class="fas fa-trash"></i>
+                    <button class="btn-delete" onclick="deleteCalculation('${calc.id}')">
+                        <i class="fas fa-trash"></i> Excluir
                     </button>
-                </td>
-            </tr>
+                </div>
+            </div>
         `;
     }).join('');
 }
