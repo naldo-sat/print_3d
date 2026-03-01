@@ -2,7 +2,7 @@
 
 ## 📋 Sobre o Projeto
 
-**Print Calc** é uma aplicação web profissional e completa para cálculo de custos de impressão 3D, desenvolvida para substituir planilhas Excel por uma interface intuitiva, moderna e personalizável. O sistema permite configuração detalhada de custos, gerenciamento de múltiplas impressoras, controle de estoque de filamentos, personalização visual completa e manutenção de histórico com filtros avançados.
+**Conecta Print** é uma aplicação web profissional e completa para cálculo de custos de impressão 3D, desenvolvida para substituir planilhas Excel por uma interface intuitiva, moderna e personalizável. O sistema permite configuração detalhada de custos, gerenciamento de múltiplas impressoras, controle de estoque de filamentos, personalização visual completa e manutenção de histórico com filtros avançados.
 
 ## ✨ Funcionalidades Implementadas
 
