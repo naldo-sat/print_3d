@@ -1,4 +1,4 @@
-# 🖨️ Print Calc - Calculadora de Impressão 3D
+# 🖨️ Conecta Print - Calculadora de Impressão 3D
 
 ## 📋 Sobre o Projeto
 
