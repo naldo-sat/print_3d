@@ -1,8 +1,8 @@
-# 🖨️ Conecta Print - Calculadora de Impressão 3D
+# 🖨️ Print Calc - Calculadora de Impressão 3D
 
 ## 📋 Sobre o Projeto
 
-**Conecta Print** é uma aplicação web profissional e completa para cálculo de custos de impressão 3D, desenvolvida para substituir planilhas Excel por uma interface intuitiva, moderna e personalizável. O sistema permite configuração detalhada de custos, gerenciamento de múltiplas impressoras, controle de estoque de filamentos, personalização visual completa e manutenção de histórico com filtros avançados.
+**Print Calc** é uma aplicação web profissional e completa para cálculo de custos de impressão 3D, desenvolvida para substituir planilhas Excel por uma interface intuitiva, moderna e personalizável. O sistema permite configuração detalhada de custos, gerenciamento de múltiplas impressoras, controle de estoque de filamentos, personalização visual completa e manutenção de histórico com filtros avançados.
 
 ## ✨ Funcionalidades Implementadas
 
@@ -390,7 +390,37 @@ Para dúvidas ou sugestões, consulte a documentação ou entre em contato.
 
 ## 📝 Changelog
 
-### Versão 3.0 (Atual) - 2026-03-02
+### Versão 3.2 (Atual) - 2026-03-02
+- 📱 **MOBILE - REFINAMENTOS FINAIS**:
+  - Page-headers (.page-header) agora ocultos no mobile (informação no mobile-header)
+  - Unidades (g, R$, %) agora com tamanho uniforme (não mais desproporcionais)
+  - Ícones adicionados ao mobile-page-title (🧮 Calculadora, 🕒 Histórico, ⚙️ Configurações)
+  - Fonte do mobile-page-title aumentada (1.4rem) para melhor legibilidade
+  - Mobile-header inteiro agora é clicável (não apenas o hambúrguer)
+  - Cursor: pointer aplicado ao header para indicar interação
+- 🖨️ **PDF MOBILE - 1 PÁGINA GARANTIDA**:
+  - Fontes reduzidas em mobile (9pt rows, 10pt titles, 14pt h1, 12pt model)
+  - Espaçamentos reduzidos (padding 0.2cm, margins 0.3cm)
+  - PDF mobile agora cabe garantidamente em 1 página A4
+- 🎨 **CONSISTÊNCIA VISUAL**:
+  - Stats cards: valores, unidades e símbolos com mesmo tamanho (1.4rem)
+  - History cards: valores, unidades e símbolos com mesmo tamanho (1rem)
+  - Melhor experiência visual no mobile
+
+### Versão 3.1 - 2026-03-02
+- 📱 **MOBILE - HEADER REFINADO**:
+  - Removido menu flutuante antigo (.menu-toggle grande)
+  - Header mobile agora usa gradiente do tema (primary → secondary)
+  - Texto branco para melhor contraste
+  - Hambúrguer no canto direito, nome da página à esquerda
+  - Box-shadow sutil para destaque
+- 🖨️ **PDF - LIMPEZA FINAL**:
+  - Mobile-header agora oculto na impressão
+  - Elementos do menu não aparecem mais no PDF
+  - Orientação: desativar "Cabeçalhos e rodapés" do navegador para PDF mais limpo
+  - (O texto "Calculadora" no topo é do navegador, não do app)
+
+### Versão 3.0 - 2026-03-02
 - 📱 **MOBILE - NAVEGAÇÃO REFORMULADA**:
   - Header fixo com menu hambúrguer no canto superior direito
   - Nome da página atual exibido ao lado do menu
