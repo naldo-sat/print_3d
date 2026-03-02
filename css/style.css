@@ -273,13 +273,21 @@ body {
     justify-content: space-between;
     padding: 0 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer; /* Make entire header clickable */
 }
 
 .mobile-page-title {
-    font-size: 1.25rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: white;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mobile-page-title i {
+    font-size: 1.3rem;
 }
 
 .mobile-menu-toggle {
@@ -1320,6 +1328,11 @@ body {
         padding-top: 70px; /* Espaço para o mobile header */
     }
     
+    /* Hide page headers on mobile (shown in mobile-header instead) */
+    .page-header {
+        display: none;
+    }
+    
     .menu-toggle {
         display: block;
         position: fixed;
@@ -1368,6 +1381,13 @@ body {
     .stat-card-compact .stat-value {
         font-size: 1.4rem !important;
         margin-bottom: 0.35rem;
+    }
+    
+    /* Normalize unit sizes (g, R$, %) to match numbers */
+    .stat-card-compact .stat-value,
+    .stat-card-compact .stat-value span,
+    .stat-card-compact .stat-value * {
+        font-size: 1.4rem !important;
     }
     
     .stat-card-compact .stat-label {
@@ -1519,6 +1539,12 @@ body {
     /* Keep desktop layout on mobile */
     .history-card-body {
         gap: 0.5rem;
+    }
+    
+    /* Normalize unit sizes in history cards */
+    .history-card-item span,
+    .history-card-item span * {
+        font-size: 1rem !important;
     }
     
     .history-card-actions {
@@ -1739,6 +1765,40 @@ body {
     @page {
         size: A4;
         margin: 0.8cm; /* Reduzido de 1cm */
+    }
+    
+    /* Force single page on mobile */
+    @media (max-width: 768px) {
+        .calculator-result-card {
+            padding: 0.2cm !important;
+        }
+        
+        .result-section {
+            margin-bottom: 0.3cm !important;
+        }
+        
+        .result-row {
+            padding: 0.15cm 0 !important;
+            font-size: 9pt !important;
+        }
+        
+        .result-section-title {
+            font-size: 10pt !important;
+            margin-bottom: 0.2cm !important;
+        }
+        
+        .print-header h1 {
+            font-size: 14pt !important;
+        }
+        
+        .print-model-name {
+            font-size: 12pt !important;
+        }
+        
+        .result-final {
+            padding: 0.3cm !important;
+            margin-top: 0.3cm !important;
+        }
     }
     
     /* Remove page numbers and headers/footers from browser print */
