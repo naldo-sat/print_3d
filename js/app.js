@@ -309,16 +309,8 @@ function setupThemeToggle() {
 // Menu Toggle (Mobile)
 // ========================================
 function setupMenuToggle() {
-    const menuToggle = document.getElementById('menuToggle');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
-    
-    // Desktop menu toggle
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-    }
     
     // Mobile menu toggle
     if (mobileMenuToggle && sidebar) {
@@ -331,7 +323,6 @@ function setupMenuToggle() {
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768 && 
             !sidebar.contains(e.target) && 
-            !menuToggle?.contains(e.target) &&
             !mobileMenuToggle?.contains(e.target) &&
             sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
@@ -1260,6 +1251,9 @@ function setupCalculatorForm() {
             const originalTitle = document.title;
             const modelName = document.getElementById('resultModelName')?.textContent || 'Orçamento';
             document.title = `Orçamento - ${modelName}`;
+            
+            // Show print instructions
+            console.log('💡 TIP: Para um PDF mais limpo, desative "Cabeçalhos e rodapés" nas configurações de impressão do navegador.');
             
             // Print
             window.print();
