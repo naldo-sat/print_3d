@@ -1212,11 +1212,17 @@ body {
 }
 
 .history-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex: 1; /* Permite que o body cresça */
+}
+
+.history-card-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
-    margin-bottom: 1rem;
-    flex: 1; /* Permite que o body cresça */
 }
 
 .history-card-item {
@@ -1347,8 +1353,9 @@ body {
     }
     
     .form-row {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Keep 2 columns */
+        gap: 0.5rem;
     }
     
     .form-group {
@@ -1538,13 +1545,26 @@ body {
     
     /* Keep desktop layout on mobile */
     .history-card-body {
-        gap: 0.5rem;
+    
+    /* Make items more compact on mobile */
+    .history-card-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .history-card-item label {
+        font-size: 0.7rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .history-card-item span {
+        font-size: 0.95rem;
     }
     
     /* Normalize unit sizes in history cards */
     .history-card-item span,
     .history-card-item span * {
-        font-size: 1rem !important;
+        font-size: 0.95rem !important;
     }
     
     .history-card-actions {
@@ -1585,12 +1605,22 @@ body {
     
     .form-actions,
     .result-actions {
-        flex-direction: column;
+        flex-direction: row; /* Keep buttons side by side */
+        gap: 0.5rem;
     }
     
-    .btn {
-        width: 100%;
+    .form-actions .btn,
+    .result-actions .btn {
+        flex: 1; /* Equal width */
         justify-content: center;
+        font-size: 0.9rem;
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Hide icons on mobile to save space */
+    .form-actions .btn i,
+    .result-actions .btn i {
+        display: none;
     }
     
     /* Correções adicionais de responsividade */
@@ -1677,20 +1707,28 @@ body {
     }
     
     .history-card-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .history-card-item {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.9rem;
+        flex-direction: column;
     }
     
-    .history-card-label {
+    .history-card-item label {
+        font-size: 0.7rem;
         color: var(--text-secondary);
-        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
     }
     
-    .history-card-value {
-        font-weight: 600;
+    .history-card-item span {
+        font-size: 0.95rem;
         color: var(--text-primary);
+        font-weight: 600;
     }
     
     .history-card-actions {
@@ -1749,6 +1787,16 @@ body {
     textarea {
         font-size: 16px; /* Previne zoom no iOS */
         width: 100%;
+    }
+    
+    /* Exception: inputs in form-row should not be 100% width */
+    .form-row input[type="number"] {
+        width: 100%;
+        max-width: 100%; /* Garante tamanho uniforme */
+    }
+    
+    .form-row .form-group {
+        flex: 1; /* Divide espaço igualmente */
     }
 }
 
