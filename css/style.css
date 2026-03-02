@@ -1263,8 +1263,7 @@ body {
         top: 0;
         right: 0;
         height: 100vh;
-        width: 80vw;
-        max-width: 320px;
+        width: 100vw; /* Ocupa tela inteira */
         z-index: 1000;
         transform: translateX(100%);
         transition: transform 0.3s ease;
@@ -1720,7 +1719,7 @@ body {
     
     @page {
         size: A4;
-        margin: 1cm;
+        margin: 0.8cm; /* Reduzido de 1cm */
     }
     
     html, body {
@@ -1773,9 +1772,9 @@ body {
     .print-header {
         display: block !important;
         text-align: center;
-        padding-bottom: 0.8cm;
-        border-bottom: 2px solid #667eea;
-        margin-bottom: 1cm;
+        padding-bottom: 0.5cm; /* Reduzido de 0.8cm */
+        border-bottom: 2px solid var(--primary-color);
+        margin-bottom: 0.6cm; /* Reduzido de 1cm */
         page-break-inside: avoid;
     }
 
@@ -1821,15 +1820,15 @@ body {
     }
 
     .result-section {
-        margin-bottom: 0.8cm;
+        margin-bottom: 0.5cm; /* Reduzido de 0.8cm */
         page-break-inside: avoid;
     }
     
     .result-section-title {
-        font-size: 12pt;
+        font-size: 11pt; /* Reduzido de 12pt */
         font-weight: 700;
         color: #333;
-        margin-bottom: 0.4cm;
+        margin-bottom: 0.3cm; /* Reduzido de 0.4cm */
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -1838,7 +1837,7 @@ body {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        padding: 0.3cm 0;
+        padding: 0.2cm 0; /* Reduzido de 0.3cm */
         border-bottom: none;
         page-break-inside: avoid;
     }
@@ -1884,10 +1883,10 @@ body {
     
     .result-final {
         background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
-        padding: 0.6cm !important;
+        padding: 0.4cm !important; /* Reduzido de 0.6cm */
         border-radius: 8px;
-        margin-top: 0.8cm;
-        border: 2px solid #002fff !important;
+        margin-top: 0.5cm; /* Reduzido de 0.8cm */
+        border: 2px solid var(--primary-color) !important;
         page-break-inside: avoid;
     }
     
@@ -1896,20 +1895,20 @@ body {
     }
     
     .result-row-final .result-label {
-        font-size: 13pt !important;
+        font-size: 12pt !important; /* Reduzido de 13pt */
         font-weight: 900 !important;
-        color: #002fff !important;
+        color: var(--primary-color) !important;
     }
     
     .result-value-final {
-        font-size: 20pt !important;
+        font-size: 18pt !important; /* Reduzido de 20pt */
         font-weight: 900 !important;
-        color: #002fff !important;
+        color: var(--primary-color) !important;
     }
 
     .print-footer {
         display: block !important;
-        margin-top: 0.8cm;
+        margin-top: 0.5cm; /* Reduzido de 0.8cm */
         padding-top: 0.3cm;
         border-top: 1px solid #ccc;
         text-align: center;
