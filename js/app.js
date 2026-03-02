@@ -218,6 +218,9 @@ async function initializeApp() {
     
     renderDashboard();
     
+    // Set initial page to Calculator
+    showPage('calculator');
+    
     // Final initialization check
     console.log('✅ App initialized successfully!');
     console.log('📊 Stats:', {
@@ -271,6 +274,17 @@ function showPage(pageId) {
         }
     });
     
+    // Update mobile page title
+    const mobileTitle = document.getElementById('mobilePageTitle');
+    if (mobileTitle) {
+        const pageTitles = {
+            'calculator': 'Calculadora',
+            'dashboard': 'Histórico',
+            'config': 'Configurações'
+        };
+        mobileTitle.textContent = pageTitles[pageId] || 'Print Calc';
+    }
+    
     // Refresh data if needed
     if (pageId === 'dashboard') {
         renderDashboard();
@@ -296,23 +310,33 @@ function setupThemeToggle() {
 // ========================================
 function setupMenuToggle() {
     const menuToggle = document.getElementById('menuToggle');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
     
+    // Desktop menu toggle
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !menuToggle.contains(e.target) &&
-                sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-            }
+    }
+    
+    // Mobile menu toggle
+    if (mobileMenuToggle && sidebar) {
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
         });
     }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && 
+            !sidebar.contains(e.target) && 
+            !menuToggle?.contains(e.target) &&
+            !mobileMenuToggle?.contains(e.target) &&
+            sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+        }
+    });
 }
 
 // ========================================
@@ -831,6 +855,15 @@ function setupPrinterForm() {
         });
     }
     
+    // Close modal on backdrop click
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+    
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1047,6 +1080,15 @@ function setupFilamentForm() {
         });
     }
     
+    // Close modal on backdrop click
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+    
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1214,7 +1256,18 @@ function setupCalculatorForm() {
     
     if (printBtn) {
         printBtn.addEventListener('click', () => {
+            // Change document title for print
+            const originalTitle = document.title;
+            const modelName = document.getElementById('resultModelName')?.textContent || 'Orçamento';
+            document.title = `Orçamento - ${modelName}`;
+            
+            // Print
             window.print();
+            
+            // Restore title after print
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 100);
         });
     }
 }
@@ -1350,6 +1403,10 @@ function displayCalculationResults() {
         document.getElementById('resultTotalCost').textContent = calc.total_cost.toFixed(2);
         document.getElementById('resultProfitMargin').textContent = calc.profit_margin_percent.toFixed(0);
         document.getElementById('resultProfitValue').textContent = calc.profit_value.toFixed(2);
+        
+        // For print: unified total (total_cost + profit_value)
+        const totalWithProfit = calc.total_cost + calc.profit_value;
+        document.getElementById('resultTotalCostWithProfit').textContent = totalWithProfit.toFixed(2);
         
         const finalPriceElement = document.getElementById('resultFinalPrice');
         console.log('🎯 Final price element:', finalPriceElement);
