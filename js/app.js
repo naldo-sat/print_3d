@@ -841,6 +841,7 @@ function setupPrinterForm() {
     const addBtn = document.getElementById('addPrinterBtn');
     const modal = document.getElementById('printerModal');
     const closeBtn = modal?.querySelector('.modal-close');
+    const cancelBtn = document.getElementById('cancelPrinterModal');
     const form = document.getElementById('printerForm');
     
     if (addBtn && modal) {
@@ -854,6 +855,13 @@ function setupPrinterForm() {
     
     if (closeBtn && modal) {
         closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+    
+    // Cancel button
+    if (cancelBtn && modal) {
+        cancelBtn.addEventListener('click', () => {
             modal.classList.remove('active');
         });
     }
@@ -1066,6 +1074,7 @@ function setupFilamentForm() {
     const addBtn = document.getElementById('addFilamentBtn');
     const modal = document.getElementById('filamentModal');
     const closeBtn = modal?.querySelector('.modal-close');
+    const cancelBtn = document.getElementById('cancelFilamentModal');
     const form = document.getElementById('filamentForm');
     
     if (addBtn && modal) {
@@ -1079,6 +1088,13 @@ function setupFilamentForm() {
     
     if (closeBtn && modal) {
         closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+    
+    // Cancel button
+    if (cancelBtn && modal) {
+        cancelBtn.addEventListener('click', () => {
             modal.classList.remove('active');
         });
     }
@@ -1586,31 +1602,33 @@ function renderHistoryTable() {
             <div class="history-card">
                 <div class="history-card-header">
                     <h4>${calc.model_name}</h4>
-                    <div class="history-card-date">
-                        <i class="fas fa-calendar"></i> ${dateStr} ${timeStr}
-                    </div>
+                    <div class="history-card-date">${dateStr}</div>
                 </div>
                 <div class="history-card-body">
-                    <div class="history-card-item">
-                        <label>Peso</label>
-                        <span>${calc.weight_grams.toFixed(2)}g</span>
+                    <div class="history-card-row">
+                        <div class="history-card-item">
+                            <label>Peso</label>
+                            <span>${calc.weight_grams.toFixed(2)}g</span>
+                        </div>
+                        <div class="history-card-item">
+                            <label>Tempo</label>
+                            <span>${calc.print_time_formatted}</span>
+                        </div>
                     </div>
-                    <div class="history-card-item">
-                        <label>Tempo</label>
-                        <span>${calc.print_time_formatted}</span>
-                    </div>
-                    <div class="history-card-item">
-                        <label>Custo Total</label>
-                        <span>R$ ${calc.total_cost.toFixed(2)}</span>
-                    </div>
-                    <div class="history-card-item">
-                        <label>Preço Final</label>
-                        <span style="color: #28a745; font-weight: 700;">R$ ${calc.final_price.toFixed(2)}</span>
+                    <div class="history-card-row">
+                        <div class="history-card-item">
+                            <label>Custo</label>
+                            <span>R$ ${calc.total_cost.toFixed(2)}</span>
+                        </div>
+                        <div class="history-card-item">
+                            <label>Preço</label>
+                            <span style="color: #28a745; font-weight: 700;">R$ ${calc.final_price.toFixed(2)}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="history-card-actions">
                     <button class="btn-view" onclick="showCalculationDetails('${calc.id}')">
-                        <i class="fas fa-eye"></i> Visualizar
+                        <i class="fas fa-eye"></i> Ver
                     </button>
                     <button class="btn-delete" onclick="deleteCalculation('${calc.id}')">
                         <i class="fas fa-trash"></i> Excluir
