@@ -1246,8 +1246,8 @@ body {
 
 .history-card-actions {
     display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
+    gap: 0.75rem;
+    justify-content: center; /* Centraliza botões */
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
 }
@@ -1262,24 +1262,28 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex: 1; /* Botões com largura igual */
+    max-width: 120px; /* Limita largura máxima */
+    justify-content: center;
 }
 
 .history-card-actions .btn-view {
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
 }
 
 .history-card-actions .btn-view:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .history-card-actions .btn-delete {
-    background-color: #dc3545;
-    color: white;
+    background-color: var(--bg-tertiary); /* Mesma cor de Limpar/Restaurar */
+    color: var(--text-primary);
 }
 
 .history-card-actions .btn-delete:hover {
-    background-color: #c82333;
+    background-color: var(--border-color); /* Hover igual btn-secondary */
 }
 
 @media (max-width: 1024px) {
@@ -2131,7 +2135,7 @@ body {
 
 .tab-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* Alinha botão à direita quando não há h2 */
     align-items: center;
     margin-bottom: 2rem;
 }
@@ -2142,6 +2146,11 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex: 1; /* Quando h2 existe, empurra botão para a direita */
+}
+
+.tab-header button {
+    flex-shrink: 0; /* Botão não encolhe */
 }
 
 /* ========================================
