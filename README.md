@@ -390,7 +390,28 @@ Para dúvidas ou sugestões, consulte a documentação ou entre em contato.
 
 ## 📝 Changelog
 
-### Versão 2.9 (Atual) - 2026-03-02
+### Versão 3.0 (Atual) - 2026-03-02
+- 📱 **MOBILE - NAVEGAÇÃO REFORMULADA**:
+  - Header fixo com menu hambúrguer no canto superior direito
+  - Nome da página atual exibido ao lado do menu
+  - Calculadora sempre como página inicial
+  - Menu ocupa tela inteira e fecha automaticamente ao selecionar aba
+- 🗂️ **HISTÓRICO OTIMIZADO**:
+  - Dashboard renomeado para "Histórico"
+  - Removida duplicação de título "Histórico de Cálculos"
+  - Cards no mobile agora seguem layout desktop (2 colunas, botões lado a lado)
+  - Redução significativa de rolagem no mobile
+- 🖨️ **PDF PROFISSIONAL**:
+  - Margem de lucro oculta do cliente (não mostra nome nem percentual)
+  - Custo Total unificado automaticamente (material + energia + margem)
+  - Removido texto fixo "Orçamento de Impressão 3D" abaixo da logo
+  - Nome de arquivo agora é "Orçamento - [Nome do Modelo].pdf"
+  - Layout mais limpo e profissional para apresentação ao cliente
+- 🐛 **CORREÇÕES**:
+  - Botão cancelar nos modais de filamento/impressora agora funciona
+  - Clique fora do modal também fecha (melhor UX)
+
+### Versão 2.9 - 2026-03-02
 - 📱 **MOBILE - MENU CORRIGIDO**:
   - Menu agora ocupa tela inteira (100vw) no mobile
   - Menu fecha automaticamente ao selecionar uma aba
