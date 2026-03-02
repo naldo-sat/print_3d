@@ -390,7 +390,48 @@ Para dúvidas ou sugestões, consulte a documentação ou entre em contato.
 
 ## 📝 Changelog
 
-### Versão 3.2 (Atual) - 2026-03-02
+### Versão 3.4 (Atual) - 2026-03-02
+- 📊 **HISTÓRICO - LAYOUT OTIMIZADO**:
+  - Cards do histórico reformatados para layout horizontal
+  - Data movida para o lado direito do título (mesma linha)
+  - Body dividido em 2 linhas horizontais:
+    - Linha 1: Peso | Tempo (lado a lado)
+    - Linha 2: Custo | Preço (lado a lado)
+  - Labels renomeados (agora apenas "Custo" e "Preço" em vez de "Custo Total" e "Preço Final")
+  - Redução significativa na altura dos cards (menos scroll)
+  - Botões renomeados: "Ver" e "Excluir" (mais compactos)
+- 📱 **MOBILE - CAMPOS UNIFORMES**:
+  - Inputs de Lucro (%) e Falha (%) agora com tamanho uniforme
+  - Ajuste `width: 100%; max-width: 100%;` para prevenir desproporção
+  - Form-groups com `flex: 1` para divisão igual do espaço
+- 🎨 **CONSISTÊNCIA VISUAL**:
+  - CSS unificado entre desktop e mobile para history cards
+  - Remoção de overrides desnecessários no mobile
+
+### Versão 3.3.1 - 2026-03-02
+- 📱 **MOBILE - AJUSTES FINOS**:
+  - Form-row forçado para 2 colunas no mobile (Lucro e Falha finalmente lado a lado)
+  - Inputs em form-row com `flex: 1` em vez de `width: 100%`
+  - Cards do histórico ainda mais compactos:
+    - Itens com background sutil (var(--bg-primary))
+    - Padding interno (0.5rem)
+    - Border-radius (6px)
+    - Fontes reduzidas (label 0.7rem, valor 0.95rem)
+  - Visual mais clean e profissional
+
+### Versão 3.3 - 2026-03-02
+- 📱 **MOBILE - OTIMIZAÇÃO FINAL**:
+  - Labels reduzidos: "Lucro (%)" e "Falha (%)" em vez de "Margem de Lucro" e "Taxa de Falha"
+  - Botões "Calcular" e "Limpar" agora lado a lado no mobile (sem ícones)
+  - Cards do histórico com itens em 2 colunas (lado a lado) para reduzir altura
+  - Botão "Cancelar" nos modais de filamento e impressora agora funciona
+  - Layout compacto evita scroll desnecessário na calculadora
+- 🎨 **MELHORIAS DE UX**:
+  - Ícones removidos dos botões principais no mobile (economia de espaço)
+  - Botões com largura igual (flex: 1) para visual harmonioso
+  - Formulário da calculadora cabe inteiro na tela sem scroll
+
+### Versão 3.2 - 2026-03-02
 - 📱 **MOBILE - REFINAMENTOS FINAIS**:
   - Page-headers (.page-header) agora ocultos no mobile (informação no mobile-header)
   - Unidades (g, R$, %) agora com tamanho uniforme (não mais desproporcionais)
