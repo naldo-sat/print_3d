@@ -234,6 +234,8 @@ async function initializeApp() {
 // ========================================
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
+    const sidebar = document.getElementById('sidebar');
+    
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -241,8 +243,8 @@ function setupNavigation() {
             showPage(page);
             
             // Close sidebar on mobile
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('active');
+            if (window.innerWidth <= 768 && sidebar) {
+                sidebar.classList.remove('active');
             }
         });
     });
@@ -1099,7 +1101,6 @@ async function saveFilament() {
     const filamentData = {
         name: document.getElementById('filamentName').value,
         type: document.getElementById('filamentType').value,
-        color: document.getElementById('filamentColor').value,
         color_hex: document.getElementById('filamentColorHex').value,
         quantity_grams: quantity,
         price_total: price,
@@ -1134,8 +1135,8 @@ function editFilament(id) {
     
     document.getElementById('filamentName').value = filament.name;
     document.getElementById('filamentType').value = filament.type;
-    document.getElementById('filamentColor').value = filament.color || '';
     document.getElementById('filamentColorHex').value = filament.color_hex || '#000000'; // Preto por padrão
+    document.getElementById('filamentColorPicker').value = filament.color_hex || '#000000'; // Sincroniza picker
     document.getElementById('filamentQuantity').value = filament.quantity_grams;
     document.getElementById('filamentPrice').value = filament.price_total;
     
