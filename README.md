@@ -390,7 +390,49 @@ Para dúvidas ou sugestões, consulte a documentação ou entre em contato.
 
 ## 📝 Changelog
 
-### Versão 2.7 (Atual) - 2026-03-01
+### Versão 2.9 (Atual) - 2026-03-02
+- 📱 **MOBILE - MENU CORRIGIDO**:
+  - Menu agora ocupa tela inteira (100vw) no mobile
+  - Menu fecha automaticamente ao selecionar uma aba
+  - Melhor experiência de navegação em dispositivos móveis
+- 🖨️ **PDF OTIMIZADO**:
+  - Layout otimizado para caber em 1 página A4
+  - Margens reduzidas (0.8cm)
+  - Espaçamentos compactados
+  - Fontes reduzidas mantendo legibilidade
+  - Cabeçalho: Logo + Nome do App + "Orçamento de Impressão 3D"
+  - Modelo: Nome, Filamento, Peso, Tempo
+  - Custos: Material, Energia, Margem de Lucro, Valor Total destacado
+- 🎨 **SIMPLIFICAÇÃO DE FILAMENTOS**:
+  - Removido campo "Nome da Cor" (desnecessário com seletor de cor)
+  - Color picker sincroniza automaticamente com código hex
+  - Interface mais limpa e objetiva
+
+### Versão 2.8 - 2026-03-02
+- ⚙️ **PERSONALIZAÇÃO AVANÇADA**:
+  - 3 cores configuráveis: Gradiente 1, Gradiente 2, Botões/Exportações
+  - Cores padrão alteradas: #556ef0 e #754da6
+  - Compatibilidade total com dark-mode (removida cor de fundo fixa)
+  - Nome do app salvo aparece corretamente no menu lateral
+- 🎨 **CARDS DE FILAMENTO**:
+  - Redesenhados com layout idêntico aos cards de impressora
+  - Preview de cor no canto superior direito
+  - Campo "Preço/Grama" adicionado (3 colunas no desktop)
+  - Interação de cores removida (sem mais colorStyle)
+- 📊 **HISTÓRICO OTIMIZADO**:
+  - Cards alinhados em desktop (minmax 280px)
+  - Forçado 1 coluna no mobile
+  - Body com flex:1 para altura consistente
+  - Melhor organização visual
+- 🎨 **GRÁFICO DO DASHBOARD**:
+  - Agora usa as cores reais dos filamentos cadastrados
+  - Preview de cor sincronizado (picker ↔️ hex)
+- 📱 **BOTÃO DARK-MODE NO MOBILE**:
+  - Posicionado corretamente
+  - Sidebar com overflow-y:auto
+  - Padding e margin aumentados para evitar corte
+
+### Versão 2.7 - 2026-03-01
 - ⚙️ **PERSONALIZAÇÃO REFORMULADA**:
   - Botões de Salvar e Restaurar individuais por card (Nome, Cores, Logo)
   - Simplificação: removida cor secundária e cor de botões (apenas Cor de Tema e Cor de Fundo)
