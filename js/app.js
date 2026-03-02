@@ -10,14 +10,43 @@ console.log('ℹ️ Available commands: debugPrintCalc(), resetPrintCalc(), test
 // LocalStorage Database Handler
 // ========================================
 const LocalDB = {
-    // Initialize database
+    // Initialize database with factory defaults
     init() {
         if (!localStorage.getItem('print_calc_db')) {
+            const now = Date.now();
             localStorage.setItem('print_calc_db', JSON.stringify({
-                printers: [],
-                filaments: [],
+                printers: [
+                    {
+                        id: 'factory_printer_1',
+                        name: 'P1S',
+                        model: 'Bambu Lab P1S',
+                        power_watts: 350,
+                        energy_cost_kwh: 4.00,
+                        created_at: now,
+                        updated_at: now
+                    }
+                ],
+                filaments: [
+                    {
+                        id: 'factory_filament_1',
+                        name: 'ABS Preto',
+                        type: 'ABS',
+                        color_hex: '#000000',
+                        quantity_grams: 1000,
+                        price_total: 90.00,
+                        price_per_gram: 0.09,
+                        created_at: now,
+                        updated_at: now
+                    }
+                ],
                 calculations: [],
-                customization: null
+                customization: {
+                    app_name: 'Conecta Print',
+                    gradient1_color: '#556ef0',
+                    gradient2_color: '#754da6',
+                    button_color: '#556ef0',
+                    logo_url: ''
+                }
             }));
         }
     },
@@ -418,20 +447,13 @@ function applyCustomization() {
         document.documentElement.style.setProperty('--secondary-color', gradient2_color);
     }
     
-    // Update button color (usado em botões, links, valor final)
+    // Update button color (usado em botões de sucesso e valor final)
     if (button_color) {
         document.documentElement.style.setProperty('--success-color', button_color);
-        // Usar também nos botões primários
+        // Aplicar cor personalizada ao valor final no PDF
         const style = document.createElement('style');
         style.id = 'custom-button-style';
         style.textContent = `
-            .btn-primary {
-                background: ${button_color} !important;
-                border-color: ${button_color} !important;
-            }
-            .btn-primary:hover {
-                opacity: 0.9;
-            }
             .result-value-final {
                 color: ${button_color} !important;
             }
@@ -475,11 +497,15 @@ function applyCustomization() {
 function setupCustomizationForm() {
     console.log('⚙️ Setting up customization form...');
     
-    // Botão Salvar Nome
-    const saveAppNameBtn = document.getElementById('saveAppNameBtn');
-    if (saveAppNameBtn) {
-        saveAppNameBtn.addEventListener('click', async () => {
+    // Botão Salvar (salva tudo)
+    const saveAllBtn = document.getElementById('saveAllBtn');
+    if (saveAllBtn) {
+        saveAllBtn.addEventListener('click', async () => {
             const appName = document.getElementById('appNameInput').value.trim();
+            const gradient1 = document.getElementById('gradient1Input').value;
+            const gradient2 = document.getElementById('gradient2Input').value;
+            const buttonColor = document.getElementById('buttonColorInput').value;
+            
             if (!appName) {
                 showNotification('Por favor, insira um nome para a aplicação', 'error');
                 return;
@@ -488,39 +514,6 @@ function setupCustomizationForm() {
             const db = LocalDB.getDB();
             if (!db.customization) db.customization = {};
             db.customization.app_name = appName;
-            LocalDB.saveDB(db);
-            
-            APP_STATE.customization = db.customization;
-            applyCustomization();
-            showNotification('Nome salvo com sucesso!', 'success');
-        });
-    }
-    
-    // Botão Restaurar Nome
-    const resetAppNameBtn = document.getElementById('resetAppNameBtn');
-    if (resetAppNameBtn) {
-        resetAppNameBtn.addEventListener('click', () => {
-            document.getElementById('appNameInput').value = 'Print Calc';
-            const db = LocalDB.getDB();
-            if (!db.customization) db.customization = {};
-            db.customization.app_name = 'Print Calc';
-            LocalDB.saveDB(db);
-            APP_STATE.customization = db.customization;
-            applyCustomization();
-            showNotification('Nome restaurado!', 'success');
-        });
-    }
-    
-    // Botão Salvar Cores
-    const saveColorsBtn = document.getElementById('saveColorsBtn');
-    if (saveColorsBtn) {
-        saveColorsBtn.addEventListener('click', async () => {
-            const gradient1 = document.getElementById('gradient1Input').value;
-            const gradient2 = document.getElementById('gradient2Input').value;
-            const buttonColor = document.getElementById('buttonColorInput').value;
-            
-            const db = LocalDB.getDB();
-            if (!db.customization) db.customization = {};
             db.customization.gradient1_color = gradient1;
             db.customization.gradient2_color = gradient2;
             db.customization.button_color = buttonColor;
@@ -528,49 +521,38 @@ function setupCustomizationForm() {
             
             APP_STATE.customization = db.customization;
             applyCustomization();
-            showNotification('Cores salvas com sucesso!', 'success');
+            showNotification('Personalização salva com sucesso!', 'success');
         });
     }
     
-    // Botão Restaurar Cores
-    const resetColorsBtn = document.getElementById('resetColorsBtn');
-    if (resetColorsBtn) {
-        resetColorsBtn.addEventListener('click', () => {
-            // Gradiente 1
+    // Botão Restaurar (restaura tudo)
+    const restoreAllBtn = document.getElementById('restoreAllBtn');
+    if (restoreAllBtn) {
+        restoreAllBtn.addEventListener('click', () => {
+            // Valores padrão
+            document.getElementById('appNameInput').value = 'Conecta Print';
             document.getElementById('gradient1Input').value = '#556ef0';
             document.getElementById('gradient1Picker').value = '#556ef0';
-            // Gradiente 2
             document.getElementById('gradient2Input').value = '#754da6';
             document.getElementById('gradient2Picker').value = '#754da6';
-            // Cor de botões
             document.getElementById('buttonColorInput').value = '#556ef0';
             document.getElementById('buttonColorPicker').value = '#556ef0';
             
             const db = LocalDB.getDB();
             if (!db.customization) db.customization = {};
+            db.customization.app_name = 'Conecta Print';
             db.customization.gradient1_color = '#556ef0';
             db.customization.gradient2_color = '#754da6';
             db.customization.button_color = '#556ef0';
-            LocalDB.saveDB(db);
-            APP_STATE.customization = db.customization;
-            applyCustomization();
-            showNotification('Cores restauradas!', 'success');
-        });
-    }
-    
-    // Botão Restaurar Logo
-    const resetLogoBtn = document.getElementById('resetLogoBtn');
-    if (resetLogoBtn) {
-        resetLogoBtn.addEventListener('click', () => {
-            const db = LocalDB.getDB();
-            if (!db.customization) db.customization = {};
             db.customization.logo_url = '';
             LocalDB.saveDB(db);
+            
             APP_STATE.customization = db.customization;
             applyCustomization();
             document.getElementById('logoPreview').style.display = 'none';
             document.getElementById('logoInput').value = '';
-            showNotification('Logo restaurado!', 'success');
+            updateColorPreview();
+            showNotification('Personalização restaurada!', 'success');
         });
     }
     
