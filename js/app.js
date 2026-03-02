@@ -278,11 +278,11 @@ function showPage(pageId) {
     const mobileTitle = document.getElementById('mobilePageTitle');
     if (mobileTitle) {
         const pageTitles = {
-            'calculator': 'Calculadora',
-            'dashboard': 'Histórico',
-            'config': 'Configurações'
+            'calculator': '<i class="fas fa-calculator"></i> Calculadora',
+            'dashboard': '<i class="fas fa-history"></i> Histórico',
+            'config': '<i class="fas fa-cog"></i> Configurações'
         };
-        mobileTitle.textContent = pageTitles[pageId] || 'Print Calc';
+        mobileTitle.innerHTML = pageTitles[pageId] || 'Print Calc';
     }
     
     // Refresh data if needed
@@ -310,11 +310,22 @@ function setupThemeToggle() {
 // ========================================
 function setupMenuToggle() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileHeader = document.getElementById('mobileHeader');
     const sidebar = document.getElementById('sidebar');
     
-    // Mobile menu toggle
+    // Mobile menu toggle - entire header clickable
+    if (mobileHeader && sidebar) {
+        mobileHeader.addEventListener('click', (e) => {
+            // Prevent double toggle if clicking button
+            if (e.target.closest('.mobile-menu-toggle')) return;
+            sidebar.classList.toggle('active');
+        });
+    }
+    
+    // Mobile menu toggle button
     if (mobileMenuToggle && sidebar) {
-        mobileMenuToggle.addEventListener('click', () => {
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent header click
             sidebar.classList.toggle('active');
         });
     }
@@ -324,6 +335,7 @@ function setupMenuToggle() {
         if (window.innerWidth <= 768 && 
             !sidebar.contains(e.target) && 
             !mobileMenuToggle?.contains(e.target) &&
+            !mobileHeader?.contains(e.target) &&
             sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
         }
