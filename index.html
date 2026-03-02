@@ -76,9 +76,9 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="weight">
-                                    <i class="fas fa-weight"></i> Peso (gramas)
+                                    <i class="fas fa-weight"></i> Peso
                                 </label>
-                                <input type="number" id="weight" required placeholder="Ex: 25" step="0.01" min="0" onfocus="if(this.value=='0') this.value=''" onblur="if(this.value=='') this.value='0'">
+                                <input type="number" id="weight" required placeholder="Gramas (ex: 25)" step="0.01" min="0" onfocus="if(this.value=='0') this.value=''" onblur="if(this.value=='') this.value='0'">
                             </div>
 
                             <div class="form-group">
@@ -121,14 +121,14 @@
                                 <label for="profitMargin">
                                     <i class="fas fa-percentage"></i> Lucro (%)
                                 </label>
-                                <input type="number" id="profitMargin" value="50" min="0" step="0.1" placeholder="Ex: 50">
+                                <input type="number" id="profitMargin" value="60" min="0" step="0.1" placeholder="Ex: 60">
                             </div>
 
                             <div class="form-group">
                                 <label for="failureRate">
                                     <i class="fas fa-exclamation-triangle"></i> Falha (%)
                                 </label>
-                                <input type="number" id="failureRate" value="15" min="0" max="100" step="0.1" placeholder="Ex: 15">
+                                <input type="number" id="failureRate" value="40" min="0" max="100" step="0.1" placeholder="Ex: 40">
                             </div>
                         </div>
 
@@ -217,7 +217,7 @@
 
                     <!-- Botões -->
                     <div class="result-actions no-print">
-                        <button class="btn btn-success" id="saveCalculation">
+                        <button class="btn btn-primary" id="saveCalculation">
                             <i class="fas fa-save"></i> Salvar
                         </button>
                         <button class="btn btn-secondary" id="printBudget">
@@ -355,7 +355,6 @@
             <!-- Filaments Tab -->
             <div class="tab-content active" id="filamentsTab">
                 <div class="tab-header">
-                    <h2><i class="fas fa-boxes"></i> Gerenciar Filamentos</h2>
                     <button class="btn btn-primary" id="addFilamentBtn">
                         <i class="fas fa-plus"></i> Adicionar Filamento
                     </button>
@@ -368,7 +367,6 @@
             <!-- Printers Tab -->
             <div class="tab-content" id="printersTab">
                 <div class="tab-header">
-                    <h2><i class="fas fa-print"></i> Gerenciar Impressoras</h2>
                     <button class="btn btn-primary" id="addPrinterBtn">
                         <i class="fas fa-plus"></i> Adicionar Impressora
                     </button>
@@ -383,100 +381,82 @@
                 <div class="tab-header">
                     <h2><i class="fas fa-palette"></i> Personalização</h2>
                 </div>
-                <div class="customization-container">
-                    <!-- Card 1: Nome da Aplicação -->
-                    <div class="config-card">
-                        <h3><i class="fas fa-signature"></i> Nome da Aplicação</h3>
+                
+                <div class="config-card">
+                    <!-- Nome da Aplicação -->
+                    <div class="form-group">
+                        <label for="appNameInput">
+                            <i class="fas fa-signature"></i> Nome da Aplicação
+                        </label>
+                        <input type="text" id="appNameInput" placeholder="Ex: Conecta Print">
+                    </div>
+                    
+                    <!-- Cores do Tema -->
+                    <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        <i class="fas fa-palette"></i> Gradiente
+                    </h4>
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="appNameInput">Nome da Calculadora</label>
-                            <input type="text" id="appNameInput" placeholder="Ex: Conecta Print">
+                            <label for="gradient1Input">Cor do Gradiente 1</label>
+                            <div class="color-input-group">
+                                <input type="color" id="gradient1Picker" value="#556ef0">
+                                <input type="text" id="gradient1Input" placeholder="#556ef0" value="#556ef0">
+                            </div>
                         </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-success" id="saveAppNameBtn">
-                                <i class="fas fa-save"></i> Salvar Nome
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="resetAppNameBtn">
-                                <i class="fas fa-undo"></i> Restaurar Padrão
-                            </button>
+                        <div class="form-group">
+                            <label for="gradient2Input">Cor do Gradiente 2</label>
+                            <div class="color-input-group">
+                                <input type="color" id="gradient2Picker" value="#754da6">
+                                <input type="text" id="gradient2Input" placeholder="#754da6" value="#754da6">
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Card 2: Cores do Tema -->
-                    <div class="config-card">
-                        <h3><i class="fas fa-palette"></i> Cores do Tema</h3>
-                        
-                        <!-- Gradiente (2 cores) -->
-                        <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem; color: var(--text-primary);">Gradiente</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="gradient1Input">Cor do Gradiente 1</label>
-                                <div class="color-input-group">
-                                    <input type="color" id="gradient1Picker" value="#556ef0">
-                                    <input type="text" id="gradient1Input" placeholder="#556ef0" value="#556ef0">
-                                </div>
-                                <small>Primeira cor do gradiente</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="gradient2Input">Cor do Gradiente 2</label>
-                                <div class="color-input-group">
-                                    <input type="color" id="gradient2Picker" value="#754da6">
-                                    <input type="text" id="gradient2Input" placeholder="#754da6" value="#754da6">
-                                </div>
-                                <small>Segunda cor do gradiente</small>
-                            </div>
+                    
+                    <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        <i class="fas fa-mouse-pointer"></i> Botões e Exportações
+                    </h4>
+                    <div class="form-group">
+                        <label for="buttonColorInput">Cor dos Botões</label>
+                        <div class="color-input-group">
+                            <input type="color" id="buttonColorPicker" value="#556ef0">
+                            <input type="text" id="buttonColorInput" placeholder="#556ef0" value="#556ef0">
                         </div>
-                        
-                        <!-- Botões e Exportações -->
-                        <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">Botões e Exportações</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="buttonColorInput">Cor dos Botões</label>
-                                <div class="color-input-group">
-                                    <input type="color" id="buttonColorPicker" value="#556ef0">
-                                    <input type="text" id="buttonColorInput" placeholder="#556ef0" value="#556ef0">
-                                </div>
-                                <small>Cor de botões, links e valor final no PDF</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Preview -->
-                        <div class="color-preview">
-                            <div class="preview-gradient" id="colorPreview"></div>
-                            <p style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">Prévia do Gradiente</p>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-success" id="saveColorsBtn">
-                                <i class="fas fa-save"></i> Salvar Cores
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="resetColorsBtn">
-                                <i class="fas fa-undo"></i> Restaurar Padrão
-                            </button>
-                        </div>
+                        <small>Usada em botões, links e valor final no PDF</small>
                     </div>
-
-                    <!-- Card 3: Logotipo -->
-                    <div class="config-card">
-                        <h3><i class="fas fa-image"></i> Logotipo</h3>
-                        <p class="config-card-description">O logo será exibido no menu lateral e nos orçamentos impressos.</p>
-                        <div class="form-group">
-                            <label for="logoInput">Upload do Logo</label>
-                            <input type="file" id="logoInput" accept="image/*">
-                            <small>Formatos aceitos: JPG, PNG, SVG (máx. 2MB). Recomendado: 200x200px</small>
-                        </div>
-                        <div id="logoPreview" class="logo-preview" style="display: none;">
-                            <img id="logoPreviewImg" src="" alt="Preview">
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" id="removeLogo">
-                                <i class="fas fa-times"></i> Remover Logo
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="resetLogoBtn">
-                                <i class="fas fa-undo"></i> Restaurar Padrão
-                            </button>
-                        </div>
+                    
+                    <!-- Preview do Gradiente -->
+                    <div class="color-preview">
+                        <div class="preview-gradient" id="colorPreview"></div>
+                        <p style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">Prévia do Gradiente</p>
+                    </div>
+                    
+                    <!-- Logotipo -->
+                    <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        <i class="fas fa-image"></i> Logotipo
+                    </h4>
+                    <div class="form-group">
+                        <label for="logoInput">Upload do Logo</label>
+                        <input type="file" id="logoInput" accept="image/*">
+                        <small>Formatos: JPG, PNG, SVG (máx. 2MB). Recomendado: 200x200px</small>
+                    </div>
+                    <div id="logoPreview" class="logo-preview" style="display: none;">
+                        <img id="logoPreviewImg" src="" alt="Preview">
+                        <button type="button" class="btn btn-sm btn-secondary" id="removeLogo" style="margin-top: 0.5rem;">
+                            <i class="fas fa-times"></i> Remover Logo
+                        </button>
+                    </div>
+                    
+                    <!-- Botões de Ação -->
+                    <div class="form-actions" style="margin-top: 2rem; justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-primary" id="saveAllBtn">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="restoreAllBtn">
+                            <i class="fas fa-undo"></i> Restaurar de Fábrica
+                        </button>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
     </main>
